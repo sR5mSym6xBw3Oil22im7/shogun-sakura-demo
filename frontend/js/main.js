@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (quantityField) {
         quantityField.value = '1';
       }
-    } catch (error) {
+    } catch {
       setStatus(statusEl, '現在、注文デモを受け付けできません。時間をおいて再度お試しください。', 'error');
     } finally {
       setLoadingState(submitButton, false);

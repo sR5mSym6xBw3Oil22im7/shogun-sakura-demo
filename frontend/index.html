@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SHOGUN SAKURAのポートフォリオ用販売デモサイトです。押し花白扇とセット商品の紹介、購入デモ、注文API連携を体験できます。">
-  <title>SHOGUN SAKURA | ポートフォリオ販売デモ</title>
+  <meta name="description" content="SHOGUN SAKURAのポートフォリオ用デモサイトです。桜の押し花と白扇「将軍」の販売デモ、注文フォーム、API連携を体験できます。">
+  <title>SHOGUN SAKURA | ポートフォリオデモ</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div class="header-right">
       <nav class="global-nav" aria-label="メニュー">
         <a href="#features">特徴</a>
-        <a href="#purchase">購入デモ</a>
+        <a href="#purchase">注文デモ</a>
       </nav>
       <div class="demo-badge">Portfolio Demo</div>
     </div>
@@ -25,15 +25,15 @@
         <p class="sub">Sakura Pressed Flower & White Folding Fan</p>
         <h1>桜の気配を、<br>白扇にそっと閉じ込める。</h1>
         <p>
-          押し花の繊細な表情と、白扇の静かな存在感を組み合わせたポートフォリオ用デモサイトです。
-          商品の紹介から購入デモ、注文APIまでをひとつの流れで確認できます。
+          押し花のやわらかな質感と、将軍印字の白扇を組み合わせたポートフォリオ用デモサイトです。
+          購入デモの入力からAPI送信、注文番号の表示までを一連の流れで確認できます。
         </p>
-        <a class="btn" href="#purchase">購入デモを見る</a>
+        <a class="btn" href="#purchase">注文デモを始める</a>
       </div>
 
       <div class="gallery">
         <figure class="large">
-          <img src="assets/shogun.png" alt="白扇のイメージ画像">
+          <img src="assets/shogun.png" alt="白扇「将軍」のイメージ画像">
           <figcaption>白扇「将軍」</figcaption>
         </figure>
         <figure class="small">
@@ -44,8 +44,8 @@
     </section>
 
     <section class="demo-note">
-      <strong>ご案内:</strong>
-      こちらはポートフォリオ用の販売デモです。実販売、決済、配送、在庫管理は行いません。
+      <strong>ご注意:</strong>
+      こちらはポートフォリオ用の販売デモです。実販売、決済、配送は行いません。
       入力された注文情報はデモとしてAPI経由で保存されます。
     </section>
 
@@ -54,9 +54,8 @@
       <h2>桜のやわらかさと、白扇の凛とした佇まい。</h2>
       <div class="intro-grid">
         <p>
-          押し花の淡い色合いと、和の扇面に重なる余白をテーマにしたデザインです。
-          ヘッダー、ヒーロー、商品紹介の流れは元デモの雰囲気を保ちながら、
-          購入デモ領域だけを実務風の画面に発展させています。
+          桜の押し花のやわらかな表情と、白扇の端正な印象をテーマにした展示用デモです。
+          フロントエンドからフォーム送信を行い、バックエンドAPIへ注文情報を送る動作を確認できます。
         </p>
       </div>
     </section>
@@ -70,21 +69,21 @@
           <span>Item 01</span>
           <h3>桜の押し花</h3>
           <p>
-            季節のやさしさを映した押し花を、ギフトや装飾のイメージとして紹介します。
-            既存レイアウトの雰囲気を残したまま、商品紹介の見せ方を整えています。
+            桜のやさしい色合いを活かした押し花のイメージです。
+            ギフトや展示の雰囲気を伝えるためのビジュアルとして配置しています。
           </p>
         </div>
       </article>
       <article>
         <div class="image-shell">
-          <img src="assets/shogun.png" alt="白扇の画像">
+          <img src="assets/shogun.png" alt="白扇「将軍」の画像">
         </div>
         <div class="text-shell">
           <span>Item 02</span>
           <h3>白扇「将軍」</h3>
           <p>
-            白を基調にした扇面と控えめな装飾が、静かな高級感を演出します。
-            購入デモの主役として、セットの世界観を支えるアイテムです。
+            白を基調にした扇と将軍の印字を組み合わせたデモ用アイテムです。
+            セットの主役として、商品の印象を引き締めます。
           </p>
         </div>
       </article>
@@ -105,7 +104,7 @@
             <dd>ポートフォリオ展示、卒業制作、デモ体験の確認用です。</dd>
           </div>
           <div>
-            <dt>注意事項</dt>
+            <dt>販売形態</dt>
             <dd>実販売ではありません。注文情報はデモとして保存されます。</dd>
           </div>
         </dl>
@@ -151,7 +150,7 @@
           </div>
 
           <p class="form-hint">
-            このフォームはデモ注文用です。送信すると API 経由で注文データが登録されます。
+            このフォームはデモ用です。送信すると API 経由で注文データが登録されます。
           </p>
 
           <button class="btn" type="submit" data-submit-button>注文デモを送信する</button>
