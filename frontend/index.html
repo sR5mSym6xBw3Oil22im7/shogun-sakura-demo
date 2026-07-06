@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SHOGUN SAKURAのポートフォリオ用販売デモサイトです。押し花白扇とセット商品の紹介、購入デモ、注文API連携を体験できます。">
+  <title>SHOGUN SAKURA | ポートフォリオ販売デモ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">SHOGUN SAKURA</div>
+    <div class="header-right">
+      <nav class="global-nav" aria-label="メニュー">
+        <a href="#features">特徴</a>
+        <a href="#purchase">購入デモ</a>
+      </nav>
+      <div class="demo-badge">Portfolio Demo</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="copy">
+        <p class="sub">Sakura Pressed Flower & White Folding Fan</p>
+        <h1>桜の気配を、<br>白扇にそっと閉じ込める。</h1>
+        <p>
+          押し花の繊細な表情と、白扇の静かな存在感を組み合わせたポートフォリオ用デモサイトです。
+          商品の紹介から購入デモ、注文APIまでをひとつの流れで確認できます。
+        </p>
+        <a class="btn" href="#purchase">購入デモを見る</a>
+      </div>
+
+      <div class="gallery">
+        <figure class="large">
+          <img src="assets/shogun.png" alt="白扇のイメージ画像">
+          <figcaption>白扇「将軍」</figcaption>
+        </figure>
+        <figure class="small">
+          <img src="assets/oshibana_sakura.png" alt="桜の押し花のイメージ画像">
+          <figcaption>桜の押し花</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="demo-note">
+      <strong>ご案内:</strong>
+      こちらはポートフォリオ用の販売デモです。実販売、決済、配送、在庫管理は行いません。
+      入力された注文情報はデモとしてAPI経由で保存されます。
+    </section>
+
+    <section class="intro" id="features">
+      <p class="sub">About the Set</p>
+      <h2>桜のやわらかさと、白扇の凛とした佇まい。</h2>
+      <div class="intro-grid">
+        <p>
+          押し花の淡い色合いと、和の扇面に重なる余白をテーマにしたデザインです。
+          ヘッダー、ヒーロー、商品紹介の流れは元デモの雰囲気を保ちながら、
+          購入デモ領域だけを実務風の画面に発展させています。
+        </p>
+      </div>
+    </section>
+
+    <section class="product-showcase">
+      <article>
+        <div class="image-shell">
+          <img src="assets/oshibana_sakura.png" alt="桜の押し花の画像">
+        </div>
+        <div class="text-shell">
+          <span>Item 01</span>
+          <h3>桜の押し花</h3>
+          <p>
+            季節のやさしさを映した押し花を、ギフトや装飾のイメージとして紹介します。
+            既存レイアウトの雰囲気を残したまま、商品紹介の見せ方を整えています。
+          </p>
+        </div>
+      </article>
+      <article>
+        <div class="image-shell">
+          <img src="assets/shogun.png" alt="白扇の画像">
+        </div>
+        <div class="text-shell">
+          <span>Item 02</span>
+          <h3>白扇「将軍」</h3>
+          <p>
+            白を基調にした扇面と控えめな装飾が、静かな高級感を演出します。
+            購入デモの主役として、セットの世界観を支えるアイテムです。
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <section class="purchase" id="purchase">
+      <div class="purchase-card">
+        <p class="sub">Set Price / Demo</p>
+        <h2>桜の押し花と白扇「将軍」セット</h2>
+        <div class="price">¥4,800 <span>税込・デモ価格</span></div>
+        <dl>
+          <div>
+            <dt>セット内容</dt>
+            <dd>桜の押し花と白扇「将軍」のセットです。</dd>
+          </div>
+          <div>
+            <dt>用途</dt>
+            <dd>ポートフォリオ展示、卒業制作、デモ体験の確認用です。</dd>
+          </div>
+          <div>
+            <dt>注意事項</dt>
+            <dd>実販売ではありません。注文情報はデモとして保存されます。</dd>
+          </div>
+        </dl>
+
+        <form class="purchase-form" data-order-form novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="name">お名前</label>
+              <input id="name" name="name" type="text" maxlength="50" autocomplete="name" required>
+              <p class="field-error" data-error-for="name" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="email">メールアドレス</label>
+              <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
+              <p class="field-error" data-error-for="email" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="postalCode">郵便番号</label>
+              <input id="postalCode" name="postalCode" type="text" inputmode="numeric" maxlength="10" autocomplete="postal-code" placeholder="100-0001">
+              <p class="field-note">任意。数字とハイフンのみ入力できます。</p>
+              <p class="field-error" data-error-for="postalCode" aria-live="polite"></p>
+            </div>
+
+            <div class="field field-full">
+              <label for="address">住所</label>
+              <textarea id="address" name="address" rows="3" maxlength="200" autocomplete="street-address" required></textarea>
+              <p class="field-error" data-error-for="address" aria-live="polite"></p>
+            </div>
+
+            <div class="field">
+              <label for="quantity">数量</label>
+              <input id="quantity" name="quantity" type="number" min="1" max="9" step="1" value="1" required>
+              <p class="field-error" data-error-for="quantity" aria-live="polite"></p>
+            </div>
+
+            <div class="field field-full">
+              <label for="note">備考</label>
+              <textarea id="note" name="note" rows="3" maxlength="200" placeholder="任意でご記入ください"></textarea>
+              <p class="field-error" data-error-for="note" aria-live="polite"></p>
+            </div>
+          </div>
+
+          <p class="form-hint">
+            このフォームはデモ注文用です。送信すると API 経由で注文データが登録されます。
+          </p>
+
+          <button class="btn" type="submit" data-submit-button>注文デモを送信する</button>
+          <div class="form-status" data-form-status aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>SHOGUN SAKURA / Portfolio Demo Site</footer>
+
+  <script>
+    window.API_BASE_URL = "http://localhost:8080";
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>
