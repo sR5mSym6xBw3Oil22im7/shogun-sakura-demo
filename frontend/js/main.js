@@ -106,7 +106,7 @@ function validatePayload(payload) {
     fieldErrors.email = 'メールアドレスを正しい形式で入力してください。';
   }
 
-  if (normalized.postalCode && (!/^[0-9-]+$/.test(normalized.postalCode) || normalized.postalCode.length > 10)) {
+  if (normalized.postalCode && (!/^[0-9-]+$/.test(normalized.postalCode) || normalized.postalCode.length > 8)) {
     fieldErrors.postalCode = '郵便番号は数字とハイフンで入力してください。';
   }
 

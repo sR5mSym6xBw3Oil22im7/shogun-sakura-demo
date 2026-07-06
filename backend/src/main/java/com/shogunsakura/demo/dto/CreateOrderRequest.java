@@ -18,7 +18,7 @@ public record CreateOrderRequest(
     @Size(max = 100, message = "メールアドレスは100文字以内で入力してください。")
     String email,
 
-    @Pattern(regexp = "^[0-9-]{1,10}$", message = "郵便番号は数字とハイフンで入力してください。")
+    @Pattern(regexp = "^[0-9-]{1,8}$", message = "郵便番号は数字とハイフンで入力してください。")
     String postalCode,
 
     @NotBlank(message = "住所を入力してください。")
