@@ -2,18 +2,23 @@
 
 桜の押し花と白扇「将軍」を紹介する、職業訓練校卒業制作のポートフォリオ用デモサイトです。
 
-## 概要
+## 公開構成
 
-- `frontend/` は GitHub Pages で公開する静的サイトです。
-- `backend/` は Java 21 / Spring Boot / Maven で作る注文受付 API です。
-- 実販売、決済、配送、在庫管理は行いません。
-- フロントの購入フォームから送信した内容は、API 経由で Render PostgreSQL の `orders` テーブルに保存します。
+- フロントエンド: GitHub Pages
+- バックエンド: Render Web Service + PostgreSQL
+- デモURL: `https://sr5msym6xbw3oil22im7.github.io/shogun-sakura-demo/frontend/`
 
-## 構成
+## 仕様
 
-- `frontend/`: HTML / CSS / JavaScript
-- `backend/`: Spring Boot API
-- `docs/`: 参考資料
+- デザインは既存のギャラリー調レイアウトを維持します
+- 実販売、決済、配送、在庫管理は行いません
+- フロントの注文フォームから送信された内容をバックエンド API 経由で PostgreSQL に保存します
+
+## ディレクトリ
+
+- `frontend/`: GitHub Pages で公開する静的サイト
+- `backend/`: Java 21 / Spring Boot / Maven の API
+- `docs/`: 補助資料
 
 ## ローカル起動
 
@@ -34,18 +39,16 @@ mvn spring-boot:run
 - `GET /api/health`
 - `POST /api/orders`
 
-### POST `/api/orders`
-
-Content-Type は `application/json` です。
+### `POST /api/orders`
 
 ```json
 {
-  "name": "山田 太郎",
+  "name": "Taro Yamada",
   "email": "test@example.com",
   "postalCode": "100-0001",
-  "address": "東京都千代田区1-1-1",
+  "address": "Tokyo 1-1-1",
   "quantity": 1,
-  "note": "デモ注文です"
+  "note": "Browser order demo"
 }
 ```
 
@@ -71,6 +74,16 @@ Content-Type は `application/json` です。
 }
 ```
 
+## GitHub Pages と Render の接続
+
+フロントは、ローカルでは `http://localhost:8080` を使い、本番では `https://shogun-sakura-demo-backend.onrender.com` を使うようにしています。
+
+Render 側の CORS 許可元には次を設定します。
+
+- `https://sr5msym6xbw3oil22im7.github.io`
+- `http://localhost:5500`
+- `http://127.0.0.1:5500`
+
 ## curl.exe での確認
 
 PowerShell では `curl` ではなく `curl.exe` を使います。
@@ -82,29 +95,15 @@ curl.exe -i http://localhost:8080/api/health
 ```powershell
 curl.exe -i -X POST "http://localhost:8080/api/orders" `
   -H "Content-Type: application/json" `
-  -d "{\"name\":\"山田 太郎\",\"email\":\"test@example.com\",\"postalCode\":\"100-0001\",\"address\":\"東京都千代田区1-1-1\",\"quantity\":1,\"note\":\"デモ注文です\"}"
+  -d "{\"name\":\"Taro Yamada\",\"email\":\"test@example.com\",\"postalCode\":\"100-0001\",\"address\":\"Tokyo 1-1-1\",\"quantity\":1,\"note\":\"Browser order demo\"}"
 ```
 
-## 環境変数
+## Render
 
-- `DATABASE_URL`: PostgreSQL の JDBC URL
-- `DATABASE_USERNAME`: DB ユーザー名
-- `DATABASE_PASSWORD`: DB パスワード
-- `ALLOWED_ORIGINS`: CORS 許可オリジン
-- `PORT`: 起動ポート。未指定時は `8080`
-
-Render の External Database URL が `postgres://...` または `postgresql://...` の場合でも、`backend/src/main/java/com/shogunsakura/demo/config/RenderDatabaseUrlEnvironmentPostProcessor.java` が `jdbc:postgresql://...` に変換します。
-
-## Docker / Render
-
-Render Web Service では `Language: Docker` を選び、`backend/Dockerfile` を使います。
-
+- Language: `Docker`
 - Dockerfile: `backend/Dockerfile`
 - `.dockerignore`: `backend/.dockerignore`
-- Build: Dockerfile に委任
-- Start: Dockerfile の `CMD` に委任
-
-`render.yaml` を使う場合も、Docker 前提の設定にしてください。
+- Health check path: `/api/health`
 
 ## DB 確認例
 
@@ -113,9 +112,4 @@ SELECT id, product_code, customer_name, email, quantity, total_amount, created_a
 FROM orders
 ORDER BY id DESC;
 ```
-
-## 注意
-
-- このサイトはポートフォリオ用デモです。
-- 秘密情報を GitHub にコミットしないでください。
 

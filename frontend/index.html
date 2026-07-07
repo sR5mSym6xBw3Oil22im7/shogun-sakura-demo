@@ -24,42 +24,63 @@
       <div class="copy">
         <p class="sub">Sakura Pressed Flower &amp; White Folding Fan</p>
         <h1>飾るための桜。<br>魅せるための白扇。</h1>
-        <p>桜の押し花と「将軍」と印字された白扇を、和のギフトセットとして紹介する1ページデモサイトです。高級感のある配色で、商品そのものの存在感を引き立てます。</p>
+        <p>
+          桜の押し花と「将軍」と印字された白扇を、和のギフトセットとして紹介する1ページデモサイトです。
+          高級感のある配色で、商品そのものの存在感を引き立てます。
+        </p>
         <a class="btn" href="#purchase">商品セットを見る</a>
       </div>
       <div class="gallery">
-        <figure class="large"><img src="assets/shogun.png" alt="将軍と印字された白扇"><figcaption>白扇「将軍」</figcaption></figure>
-        <figure class="small"><img src="assets/oshibana_sakura.png" alt="桜の押し花"><figcaption>桜の押し花</figcaption></figure>
+        <figure class="large">
+          <img src="assets/shogun.png" alt="将軍と印字された白扇">
+          <figcaption>白扇「将軍」</figcaption>
+        </figure>
+        <figure class="small">
+          <img src="assets/oshibana_sakura.png" alt="桜の押し花">
+          <figcaption>桜の押し花</figcaption>
+        </figure>
       </div>
     </section>
 
     <section class="demo-note">
-      <strong>実販売なし：</strong> このページは職業訓練校卒業制作ポートフォリオ用のデモです。決済・注文・在庫管理は実装していません。
+      <strong>実販売なし：</strong>
+      このページは職業訓練校卒業制作ポートフォリオ用のデモです。決済・注文・在庫管理は実装していません。
     </section>
 
     <section class="intro" id="features">
       <p class="sub">About the Set</p>
       <h2>繊細な桜と、力強い「将軍」の対比。</h2>
       <div class="intro-grid">
-        <p>押し花の柔らかな色合いと、白扇に印字された力強い文字を組み合わせることで、ギフト・展示・撮影小物として提案しやすいセットにしています。</p>
+        <p>
+          押し花の柔らかな色合いと、白扇に印字された力強い文字を組み合わせることで、
+          ギフト・展示・撮影小物として提案しやすいセットにしています。
+        </p>
       </div>
     </section>
 
     <section class="product-showcase" id="product">
       <article>
-        <div class="image-shell"><img src="assets/oshibana_sakura.png" alt="桜の押し花の商品画像"></div>
+        <div class="image-shell">
+          <img src="assets/oshibana_sakura.png" alt="桜の押し花の商品画像">
+        </div>
         <div class="text-shell">
           <span>Item 01</span>
           <h3>桜の押し花</h3>
-          <p>季節感を添える押し花。淡い色合いを活かし、カード制作やディスプレイ演出に向いた商品として掲載しています。</p>
+          <p>
+            季節感を添える押し花。淡い色合いを活かし、カード制作やディスプレイ演出に向いた商品として掲載しています。
+          </p>
         </div>
       </article>
       <article>
-        <div class="image-shell"><img src="assets/shogun.png" alt="将軍と印字された白扇の商品画像"></div>
+        <div class="image-shell">
+          <img src="assets/shogun.png" alt="将軍と印字された白扇の商品画像">
+        </div>
         <div class="text-shell">
           <span>Item 02</span>
           <h3>白扇「将軍」</h3>
-          <p>白を基調にした扇面に「将軍」と印字。和の雰囲気とインパクトを兼ね備えたセット商品の主役です。</p>
+          <p>
+            白を基調にした扇面に「将軍」と印字。和の雰囲気とインパクトを兼ね備えたセット商品の主役です。
+          </p>
         </div>
       </article>
     </section>
@@ -70,9 +91,18 @@
         <h2>桜の押し花と白扇「将軍」セット</h2>
         <div class="price">¥4,800 <span>税込・デモ価格</span></div>
         <dl>
-          <div><dt>セット内容</dt><dd>押し花（桜）1点、白扇「将軍」1点</dd></div>
-          <div><dt>用途</dt><dd>展示、撮影小物、和風ギフト、ポートフォリオ掲載</dd></div>
-          <div><dt>販売状態</dt><dd>デモサイトのため実際には販売していません</dd></div>
+          <div>
+            <dt>セット内容</dt>
+            <dd>押し花（桜）1点、白扇「将軍」1点</dd>
+          </div>
+          <div>
+            <dt>用途</dt>
+            <dd>展示、撮影小物、和風ギフト、ポートフォリオ掲載</dd>
+          </div>
+          <div>
+            <dt>販売状態</dt>
+            <dd>デモサイトのため実際には販売していません</dd>
+          </div>
         </dl>
 
         <form class="purchase-form" data-order-form novalidate>
@@ -129,7 +159,13 @@
   <footer>SHOGUN SAKURA / Portfolio Demo Site</footer>
 
   <script>
-    window.API_BASE_URL = "http://localhost:8080";
+    window.API_BASE_URL = (
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1' ||
+      location.protocol === 'file:'
+    )
+      ? 'http://localhost:8080'
+      : 'https://shogun-sakura-demo-backend.onrender.com';
   </script>
   <script src="js/main.js"></script>
 </body>

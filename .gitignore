@@ -3,6 +3,7 @@ backend/target/
 frontend/dist/
 dist/
 build/
+.tmp/
 
 # Java and IDE files
 *.class
