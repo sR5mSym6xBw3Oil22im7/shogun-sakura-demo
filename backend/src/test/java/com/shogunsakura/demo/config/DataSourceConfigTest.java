@@ -13,7 +13,16 @@ class DataSourceConfigTest {
         .withProperty("DATABASE_URL", "postgres://user:pass@example.com:5432/demo");
 
     assertThat(DataSourceConfig.resolveJdbcUrl(environment))
-        .isEqualTo("jdbc:postgresql://user:pass@example.com:5432/demo");
+        .isEqualTo("jdbc:postgresql://example.com:5432/demo?user=user&password=pass");
+  }
+
+  @Test
+  void resolveJdbcUrlPreservesSslModeAndCredentials() {
+    MockEnvironment environment = new MockEnvironment()
+        .withProperty("DATABASE_URL", "postgres://user:pass@example.com:5432/demo?sslmode=require");
+
+    assertThat(DataSourceConfig.resolveJdbcUrl(environment))
+        .isEqualTo("jdbc:postgresql://example.com:5432/demo?sslmode=require&user=user&password=pass");
   }
 
   @Test

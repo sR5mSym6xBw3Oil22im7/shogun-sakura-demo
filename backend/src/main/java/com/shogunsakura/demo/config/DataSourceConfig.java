@@ -57,13 +57,74 @@ public class DataSourceConfig {
     if (trimmed.startsWith("jdbc:")) {
       return trimmed;
     }
-    if (trimmed.startsWith("postgres://")) {
-      return "jdbc:postgresql://" + trimmed.substring("postgres://".length());
+    if (!trimmed.startsWith("postgres://") && !trimmed.startsWith("postgresql://")) {
+      return trimmed;
     }
-    if (trimmed.startsWith("postgresql://")) {
-      return "jdbc:postgresql://" + trimmed.substring("postgresql://".length());
+
+    String schemePrefix = trimmed.startsWith("postgresql://") ? "postgresql://" : "postgres://";
+    String withoutScheme = trimmed.substring(schemePrefix.length());
+
+    String pathAndQuery = "/";
+    String authority = withoutScheme;
+    int firstSlash = withoutScheme.indexOf('/');
+    if (firstSlash >= 0) {
+      authority = withoutScheme.substring(0, firstSlash);
+      pathAndQuery = withoutScheme.substring(firstSlash);
     }
-    return trimmed;
+
+    String query = "";
+    int queryIndex = pathAndQuery.indexOf('?');
+    if (queryIndex >= 0) {
+      query = pathAndQuery.substring(queryIndex + 1);
+      pathAndQuery = pathAndQuery.substring(0, queryIndex);
+    }
+
+    String host = authority;
+    String userInfo = null;
+    int atIndex = authority.lastIndexOf('@');
+    if (atIndex >= 0) {
+      userInfo = authority.substring(0, atIndex);
+      host = authority.substring(atIndex + 1);
+    }
+
+    StringBuilder jdbcUrl = new StringBuilder("jdbc:postgresql://").append(host);
+    if (!"/".equals(pathAndQuery)) {
+      jdbcUrl.append(pathAndQuery);
+    } else if (pathAndQuery.isEmpty()) {
+      jdbcUrl.append('/');
+    }
+
+    StringBuilder queryBuilder = new StringBuilder(query);
+    if (StringUtils.hasText(userInfo)) {
+      int passwordSeparator = userInfo.indexOf(':');
+      String username = userInfo;
+      String password = null;
+      if (passwordSeparator >= 0) {
+        username = userInfo.substring(0, passwordSeparator);
+        password = userInfo.substring(passwordSeparator + 1);
+      }
+
+      appendQueryParameter(queryBuilder, "user", username);
+      if (StringUtils.hasText(password)) {
+        appendQueryParameter(queryBuilder, "password", password);
+      }
+    }
+
+    if (queryBuilder.length() > 0) {
+      jdbcUrl.append('?').append(queryBuilder);
+    }
+
+    return jdbcUrl.toString();
+  }
+
+  private static void appendQueryParameter(StringBuilder queryBuilder, String name, String value) {
+    if (!StringUtils.hasText(value)) {
+      return;
+    }
+    if (queryBuilder.length() > 0 && queryBuilder.charAt(queryBuilder.length() - 1) != '&') {
+      queryBuilder.append('&');
+    }
+    queryBuilder.append(name).append('=').append(value);
   }
 
   private static String firstText(String... values) {
