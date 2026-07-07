@@ -2,6 +2,7 @@ package com.shogunsakura.demo.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import java.net.URI;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,36 +17,48 @@ public class DataSourceConfig {
 
   @Bean
   public DataSource dataSource(Environment environment) {
+    ConnectionSettings settings = resolveConnectionSettings(environment);
     HikariConfig config = new HikariConfig();
-    config.setJdbcUrl(resolveJdbcUrl(environment));
-    config.setUsername(resolveUsername(environment));
-    config.setPassword(resolvePassword(environment));
+    config.setJdbcUrl(settings.jdbcUrl());
+    config.setUsername(settings.username());
+    config.setPassword(settings.password());
     config.setDriverClassName("org.postgresql.Driver");
     return new HikariDataSource(config);
   }
 
-  static String resolveJdbcUrl(Environment environment) {
-    return normalizeJdbcUrl(firstText(
+  static ConnectionSettings resolveConnectionSettings(Environment environment) {
+    String rawUrl = firstText(
         environment.getProperty("SPRING_DATASOURCE_URL"),
         environment.getProperty("DATABASE_URL"),
-        environment.getProperty("DATABASE_INTERNAL_URL"),
-        DEFAULT_LOCAL_JDBC_URL));
-  }
+        environment.getProperty("DATABASE_INTERNAL_URL"));
 
-  static String resolveUsername(Environment environment) {
-    return firstText(
+    String jdbcUrl = normalizeJdbcUrl(rawUrl);
+    String username = firstText(
+        extractUserInfo(rawUrl, true),
         environment.getProperty("DATABASE_USERNAME"),
         environment.getProperty("PGUSER"),
         environment.getProperty("SPRING_DATASOURCE_USERNAME"),
         "postgres");
-  }
-
-  static String resolvePassword(Environment environment) {
-    return firstText(
+    String password = firstText(
+        extractUserInfo(rawUrl, false),
         environment.getProperty("DATABASE_PASSWORD"),
         environment.getProperty("PGPASSWORD"),
         environment.getProperty("SPRING_DATASOURCE_PASSWORD"),
         "postgres");
+
+    return new ConnectionSettings(jdbcUrl, username, password);
+  }
+
+  static String resolveJdbcUrl(Environment environment) {
+    return resolveConnectionSettings(environment).jdbcUrl();
+  }
+
+  static String resolveUsername(Environment environment) {
+    return resolveConnectionSettings(environment).username();
+  }
+
+  static String resolvePassword(Environment environment) {
+    return resolveConnectionSettings(environment).password();
   }
 
   static String normalizeJdbcUrl(String value) {
@@ -64,67 +77,19 @@ public class DataSourceConfig {
     String schemePrefix = trimmed.startsWith("postgresql://") ? "postgresql://" : "postgres://";
     String withoutScheme = trimmed.substring(schemePrefix.length());
 
-    String pathAndQuery = "/";
     String authority = withoutScheme;
     int firstSlash = withoutScheme.indexOf('/');
     if (firstSlash >= 0) {
       authority = withoutScheme.substring(0, firstSlash);
-      pathAndQuery = withoutScheme.substring(firstSlash);
-    }
-
-    String query = "";
-    int queryIndex = pathAndQuery.indexOf('?');
-    if (queryIndex >= 0) {
-      query = pathAndQuery.substring(queryIndex + 1);
-      pathAndQuery = pathAndQuery.substring(0, queryIndex);
     }
 
     String host = authority;
-    String userInfo = null;
     int atIndex = authority.lastIndexOf('@');
     if (atIndex >= 0) {
-      userInfo = authority.substring(0, atIndex);
       host = authority.substring(atIndex + 1);
     }
 
-    StringBuilder jdbcUrl = new StringBuilder("jdbc:postgresql://").append(host);
-    if (!"/".equals(pathAndQuery)) {
-      jdbcUrl.append(pathAndQuery);
-    } else if (pathAndQuery.isEmpty()) {
-      jdbcUrl.append('/');
-    }
-
-    StringBuilder queryBuilder = new StringBuilder(query);
-    if (StringUtils.hasText(userInfo)) {
-      int passwordSeparator = userInfo.indexOf(':');
-      String username = userInfo;
-      String password = null;
-      if (passwordSeparator >= 0) {
-        username = userInfo.substring(0, passwordSeparator);
-        password = userInfo.substring(passwordSeparator + 1);
-      }
-
-      appendQueryParameter(queryBuilder, "user", username);
-      if (StringUtils.hasText(password)) {
-        appendQueryParameter(queryBuilder, "password", password);
-      }
-    }
-
-    if (queryBuilder.length() > 0) {
-      jdbcUrl.append('?').append(queryBuilder);
-    }
-
-    return jdbcUrl.toString();
-  }
-
-  private static void appendQueryParameter(StringBuilder queryBuilder, String name, String value) {
-    if (!StringUtils.hasText(value)) {
-      return;
-    }
-    if (queryBuilder.length() > 0 && queryBuilder.charAt(queryBuilder.length() - 1) != '&') {
-      queryBuilder.append('&');
-    }
-    queryBuilder.append(name).append('=').append(value);
+    return "jdbc:postgresql://" + host + (firstSlash >= 0 ? withoutScheme.substring(firstSlash) : "/");
   }
 
   private static String firstText(String... values) {
@@ -134,5 +99,32 @@ public class DataSourceConfig {
       }
     }
     return null;
+  }
+
+  private static String extractUserInfo(String rawUrl, boolean username) {
+    if (!StringUtils.hasText(rawUrl)) {
+      return null;
+    }
+
+    String trimmed = rawUrl.trim();
+    if (!trimmed.startsWith("postgres://") && !trimmed.startsWith("postgresql://")) {
+      return null;
+    }
+
+    String scheme = trimmed.startsWith("postgresql://") ? "postgresql://" : "postgres://";
+    URI uri = URI.create("postgres://" + trimmed.substring(scheme.length()));
+    String userInfo = uri.getUserInfo();
+    if (!StringUtils.hasText(userInfo)) {
+      return null;
+    }
+
+    int separator = userInfo.indexOf(':');
+    if (username) {
+      return separator >= 0 ? userInfo.substring(0, separator) : userInfo;
+    }
+    return separator >= 0 ? userInfo.substring(separator + 1) : null;
+  }
+
+  record ConnectionSettings(String jdbcUrl, String username, String password) {
   }
 }
