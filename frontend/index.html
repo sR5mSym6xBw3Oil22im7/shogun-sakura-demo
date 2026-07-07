@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SHOGUN SAKURAのポートフォリオ用デモサイトです。桜の押し花と白扇「将軍」の販売デモ、注文フォーム、API連携を体験できます。">
-  <title>SHOGUN SAKURA | ポートフォリオデモ</title>
+  <meta name="description" content="桜の押し花と白扇「将軍」を高級感あるギャラリー風に紹介する販売デモサイトです。">
+  <title>桜と将軍の白扇｜高級ギャラリー販売デモ</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">SHOGUN SAKURA</div>
     <div class="header-right">
-      <nav class="global-nav" aria-label="メニュー">
+      <nav class="global-nav" aria-label="主要メニュー">
         <a href="#features">特徴</a>
-        <a href="#purchase">注文デモ</a>
+        <a href="#purchase">購入デモ</a>
       </nav>
       <div class="demo-badge">Portfolio Demo</div>
     </div>
@@ -22,69 +22,44 @@
   <main>
     <section class="hero">
       <div class="copy">
-        <p class="sub">Sakura Pressed Flower & White Folding Fan</p>
-        <h1>桜の気配を、<br>白扇にそっと閉じ込める。</h1>
-        <p>
-          押し花のやわらかな質感と、将軍印字の白扇を組み合わせたポートフォリオ用デモサイトです。
-          購入デモの入力からAPI送信、注文番号の表示までを一連の流れで確認できます。
-        </p>
-        <a class="btn" href="#purchase">注文デモを始める</a>
+        <p class="sub">Sakura Pressed Flower &amp; White Folding Fan</p>
+        <h1>飾るための桜。<br>魅せるための白扇。</h1>
+        <p>桜の押し花と「将軍」と印字された白扇を、和のギフトセットとして紹介する1ページデモサイトです。高級感のある配色で、商品そのものの存在感を引き立てます。</p>
+        <a class="btn" href="#purchase">商品セットを見る</a>
       </div>
-
       <div class="gallery">
-        <figure class="large">
-          <img src="assets/shogun.png" alt="白扇「将軍」のイメージ画像">
-          <figcaption>白扇「将軍」</figcaption>
-        </figure>
-        <figure class="small">
-          <img src="assets/oshibana_sakura.png" alt="桜の押し花のイメージ画像">
-          <figcaption>桜の押し花</figcaption>
-        </figure>
+        <figure class="large"><img src="assets/shogun.png" alt="将軍と印字された白扇"><figcaption>白扇「将軍」</figcaption></figure>
+        <figure class="small"><img src="assets/oshibana_sakura.png" alt="桜の押し花"><figcaption>桜の押し花</figcaption></figure>
       </div>
     </section>
 
     <section class="demo-note">
-      <strong>ご注意:</strong>
-      こちらはポートフォリオ用の販売デモです。実販売、決済、配送は行いません。
-      入力された注文情報はデモとしてAPI経由で保存されます。
+      <strong>実販売なし：</strong> このページは職業訓練校卒業制作ポートフォリオ用のデモです。決済・注文・在庫管理は実装していません。
     </section>
 
     <section class="intro" id="features">
       <p class="sub">About the Set</p>
-      <h2>桜のやわらかさと、白扇の凛とした佇まい。</h2>
+      <h2>繊細な桜と、力強い「将軍」の対比。</h2>
       <div class="intro-grid">
-        <p>
-          桜の押し花のやわらかな表情と、白扇の端正な印象をテーマにした展示用デモです。
-          フロントエンドからフォーム送信を行い、バックエンドAPIへ注文情報を送る動作を確認できます。
-        </p>
+        <p>押し花の柔らかな色合いと、白扇に印字された力強い文字を組み合わせることで、ギフト・展示・撮影小物として提案しやすいセットにしています。</p>
       </div>
     </section>
 
-    <section class="product-showcase">
+    <section class="product-showcase" id="product">
       <article>
-        <div class="image-shell">
-          <img src="assets/oshibana_sakura.png" alt="桜の押し花の画像">
-        </div>
+        <div class="image-shell"><img src="assets/oshibana_sakura.png" alt="桜の押し花の商品画像"></div>
         <div class="text-shell">
           <span>Item 01</span>
           <h3>桜の押し花</h3>
-          <p>
-            桜のやさしい色合いを活かした押し花のイメージです。
-            ギフトや展示の雰囲気を伝えるためのビジュアルとして配置しています。
-          </p>
+          <p>季節感を添える押し花。淡い色合いを活かし、カード制作やディスプレイ演出に向いた商品として掲載しています。</p>
         </div>
       </article>
       <article>
-        <div class="image-shell">
-          <img src="assets/shogun.png" alt="白扇「将軍」の画像">
-        </div>
+        <div class="image-shell"><img src="assets/shogun.png" alt="将軍と印字された白扇の商品画像"></div>
         <div class="text-shell">
           <span>Item 02</span>
           <h3>白扇「将軍」</h3>
-          <p>
-            白を基調にした扇と将軍の印字を組み合わせたデモ用アイテムです。
-            セットの主役として、商品の印象を引き締めます。
-          </p>
+          <p>白を基調にした扇面に「将軍」と印字。和の雰囲気とインパクトを兼ね備えたセット商品の主役です。</p>
         </div>
       </article>
     </section>
@@ -95,18 +70,9 @@
         <h2>桜の押し花と白扇「将軍」セット</h2>
         <div class="price">¥4,800 <span>税込・デモ価格</span></div>
         <dl>
-          <div>
-            <dt>セット内容</dt>
-            <dd>桜の押し花と白扇「将軍」のセットです。</dd>
-          </div>
-          <div>
-            <dt>用途</dt>
-            <dd>ポートフォリオ展示、卒業制作、デモ体験の確認用です。</dd>
-          </div>
-          <div>
-            <dt>販売形態</dt>
-            <dd>実販売ではありません。注文情報はデモとして保存されます。</dd>
-          </div>
+          <div><dt>セット内容</dt><dd>押し花（桜）1点、白扇「将軍」1点</dd></div>
+          <div><dt>用途</dt><dd>展示、撮影小物、和風ギフト、ポートフォリオ掲載</dd></div>
+          <div><dt>販売状態</dt><dd>デモサイトのため実際には販売していません</dd></div>
         </dl>
 
         <form class="purchase-form" data-order-form novalidate>
@@ -126,7 +92,7 @@
             <div class="field">
               <label for="postalCode">郵便番号</label>
               <input id="postalCode" name="postalCode" type="text" inputmode="numeric" maxlength="8" autocomplete="postal-code" placeholder="100-0001">
-              <p class="field-note">任意。数字とハイフンのみ入力できます。</p>
+              <p class="field-note">数字とハイフンのみ、最大8文字で入力してください。任意項目です。</p>
               <p class="field-error" data-error-for="postalCode" aria-live="polite"></p>
             </div>
 
@@ -144,16 +110,16 @@
 
             <div class="field field-full">
               <label for="note">備考</label>
-              <textarea id="note" name="note" rows="3" maxlength="200" placeholder="任意でご記入ください"></textarea>
+              <textarea id="note" name="note" rows="3" maxlength="200" placeholder="ご要望があればご記入ください"></textarea>
               <p class="field-error" data-error-for="note" aria-live="polite"></p>
             </div>
           </div>
 
           <p class="form-hint">
-            このフォームはデモ用です。送信すると API 経由で注文データが登録されます。
+            このフォームはデモ用です。送信すると API 経由で注文データを登録し、注文番号を画面に表示します。
           </p>
 
-          <button class="btn" type="submit" data-submit-button>注文デモを送信する</button>
+          <button class="btn" type="submit" data-submit-button>購入デモを送信</button>
           <div class="form-status" data-form-status aria-live="polite"></div>
         </form>
       </div>

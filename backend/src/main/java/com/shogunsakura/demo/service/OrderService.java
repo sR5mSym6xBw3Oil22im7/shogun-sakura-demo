@@ -35,7 +35,7 @@ public class OrderService {
         totalAmount,
         normalizeOptional(request.note()));
 
-    return new OrderResponse(receipt.id(), "注文デモを受け付けました。", receipt.createdAt());
+    return new OrderResponse(receipt.id(), "注文を受け付けました。", receipt.createdAt());
   }
 
   private String normalizeOptional(String value) {

@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setLoadingState(submitButton, true);
-    setStatus(statusEl, '注文デモを送信しています...', 'pending');
+    setStatus(statusEl, '注文データを送信しています...', 'pending');
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/orders`, {
@@ -44,22 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data && data.fieldErrors) {
           applyFieldErrors(form, fieldErrorMap, data.fieldErrors);
         }
+
         setStatus(
           statusEl,
-          data?.message || '現在、注文デモを受け付けできません。時間をおいて再度お試しください。',
+          data?.message || '現在、注文を受け付けできません。時間をおいて再度お試しください。',
           'error'
         );
         return;
       }
 
-      setStatus(statusEl, `注文デモを受け付けました。注文番号: ${data.orderId}`, 'success');
+      setStatus(statusEl, `注文を受け付けました。注文番号: ${data.orderId}`, 'success');
       form.reset();
+
       const quantityField = form.elements.quantity;
       if (quantityField) {
         quantityField.value = '1';
       }
     } catch {
-      setStatus(statusEl, '現在、注文デモを受け付けできません。時間をおいて再度お試しください。', 'error');
+      setStatus(
+        statusEl,
+        '現在、注文を受け付けできません。時間をおいて再度お試しください。',
+        'error'
+      );
     } finally {
       setLoadingState(submitButton, false);
     }
@@ -103,11 +109,11 @@ function validatePayload(payload) {
   if (!normalized.email) {
     fieldErrors.email = 'メールアドレスを入力してください。';
   } else if (normalized.email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
-    fieldErrors.email = 'メールアドレスを正しい形式で入力してください。';
+    fieldErrors.email = '正しいメールアドレス形式で入力してください。';
   }
 
   if (normalized.postalCode && (!/^[0-9-]+$/.test(normalized.postalCode) || normalized.postalCode.length > 8)) {
-    fieldErrors.postalCode = '郵便番号は数字とハイフンで入力してください。';
+    fieldErrors.postalCode = '郵便番号は数字とハイフンのみ、8文字以内で入力してください。';
   }
 
   if (!normalized.address) {
@@ -121,7 +127,7 @@ function validatePayload(payload) {
   } else {
     const quantity = Number(normalized.quantity);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 9) {
-      fieldErrors.quantity = '数量は1〜9の範囲で入力してください。';
+      fieldErrors.quantity = '数量は1から9の範囲で入力してください。';
     } else {
       normalized.quantity = quantity;
     }
@@ -192,7 +198,7 @@ function setLoadingState(button, isLoading) {
   }
 
   button.disabled = isLoading;
-  button.textContent = isLoading ? '送信中...' : '注文デモを送信する';
+  button.textContent = isLoading ? '送信中...' : '購入デモを送信';
 }
 
 function focusFirstInvalidField(form, fieldErrors) {

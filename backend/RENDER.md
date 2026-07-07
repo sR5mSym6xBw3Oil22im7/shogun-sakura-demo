@@ -1,31 +1,21 @@
 # Render Deployment
 
-このバックエンドは Render 上で動かす前提で以下を使います。
+バックエンドは Java ではなく `Docker` で Render にデプロイします。
 
-## Web Service
+## 設定
 
-- Build Command: `mvn clean package -DskipTests`
-- Start Command: `java -jar target/shogun-sakura-demo-backend-0.0.1-SNAPSHOT.jar`
+- Language: `Docker`
+- Dockerfile Path: `backend/Dockerfile`
+- Build Command: Dockerfile に委任
+- Start Command: Dockerfile の `CMD` に委任
 - Health Check Path: `/api/health`
-- Root Directory: `backend`
 
-## Environment Variables
+## 環境変数
 
-- `PORT`: Render が割り当てるポート
-- `DATABASE_URL`: Render PostgreSQL の接続文字列
-- `DATABASE_USERNAME`: 任意
-- `DATABASE_PASSWORD`: 任意
-- `ALLOWED_ORIGINS`: GitHub Pages の公開 URL
+- `PORT`
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
+- `ALLOWED_ORIGINS`
 
-`DATABASE_URL` が `postgres://...` または `postgresql://...` の場合でも、アプリ側で `jdbc:postgresql://...` に自動変換します。
-
-## CORS
-
-`ALLOWED_ORIGINS` に GitHub Pages の URL をカンマ区切りで設定してください。
-
-例:
-
-```text
-https://your-account.github.io
-https://your-account.github.io/your-repo
-```
+`DATABASE_URL` が `postgres://...` または `postgresql://...` の場合でも、アプリ側で `jdbc:postgresql://...` に変換します。

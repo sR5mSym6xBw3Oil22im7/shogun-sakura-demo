@@ -35,12 +35,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(DataAccessException.class)
   public ResponseEntity<ErrorResponse> handleDataAccess(DataAccessException ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new ErrorResponse("現在、注文デモを受け付けできません。時間をおいて再度お試しください。", Map.of()));
+        .body(new ErrorResponse("現在、注文を受け付けできません。時間をおいて再度お試しください。", Map.of()));
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new ErrorResponse("現在、注文デモを受け付けできません。時間をおいて再度お試しください。", Map.of()));
+        .body(new ErrorResponse("現在、注文を受け付けできません。時間をおいて再度お試しください。", Map.of()));
   }
 }
