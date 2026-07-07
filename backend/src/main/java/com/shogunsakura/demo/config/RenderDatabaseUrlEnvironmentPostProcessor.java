@@ -23,33 +23,25 @@ public class RenderDatabaseUrlEnvironmentPostProcessor implements EnvironmentPos
   public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
     Map<String, Object> overrides = new LinkedHashMap<>();
 
-    String existingJdbcUrl = environment.getProperty("spring.datasource.url");
-    if (!StringUtils.hasText(existingJdbcUrl)) {
-      String jdbcUrl = toJdbcUrl(environment.getProperty("DATABASE_URL"));
-      if (!StringUtils.hasText(jdbcUrl)) {
-        jdbcUrl = toJdbcUrl(environment.getProperty("DATABASE_INTERNAL_URL"));
-      }
-      if (StringUtils.hasText(jdbcUrl)) {
-        overrides.put("spring.datasource.url", jdbcUrl);
-      }
+    String jdbcUrl = toJdbcUrl(firstText(
+        environment.getProperty("DATABASE_URL"),
+        environment.getProperty("DATABASE_INTERNAL_URL")));
+    if (StringUtils.hasText(jdbcUrl)) {
+      overrides.put("spring.datasource.url", jdbcUrl);
     }
 
-    if (!StringUtils.hasText(environment.getProperty("spring.datasource.username"))) {
-      String username = firstText(
-          environment.getProperty("DATABASE_USERNAME"),
-          environment.getProperty("PGUSER"));
-      if (StringUtils.hasText(username)) {
-        overrides.put("spring.datasource.username", username);
-      }
+    String username = firstText(
+        environment.getProperty("DATABASE_USERNAME"),
+        environment.getProperty("PGUSER"));
+    if (StringUtils.hasText(username)) {
+      overrides.put("spring.datasource.username", username);
     }
 
-    if (!StringUtils.hasText(environment.getProperty("spring.datasource.password"))) {
-      String password = firstText(
-          environment.getProperty("DATABASE_PASSWORD"),
-          environment.getProperty("PGPASSWORD"));
-      if (StringUtils.hasText(password)) {
-        overrides.put("spring.datasource.password", password);
-      }
+    String password = firstText(
+        environment.getProperty("DATABASE_PASSWORD"),
+        environment.getProperty("PGPASSWORD"));
+    if (StringUtils.hasText(password)) {
+      overrides.put("spring.datasource.password", password);
     }
 
     if (!StringUtils.hasText(environment.getProperty("spring.datasource.driver-class-name"))) {
