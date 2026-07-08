@@ -17,12 +17,15 @@ This backend is deployed as a Render Web Service using Docker.
 ## Environment Variables
 
 - `PORT`
-- `ORDER_STORAGE_PATH`
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
 - `ALLOWED_ORIGINS`
 
-`ORDER_STORAGE_PATH` points to the text file used for order storage. On Render, we use `/tmp/shogun-sakura/orders.txt`.
+The backend accepts either a full Postgres URL such as `postgres://...` or `postgresql://...`, or a JDBC URL such as `jdbc:postgresql://...`.
 
 ## Notes
 
-- PostgreSQL is not used.
-- Orders are appended as JSON Lines in a text file.
+- The frontend sends orders to this backend API.
+- Order data is saved to Render PostgreSQL.
+- When the insert succeeds, the API returns an order completion message and order ID to the frontend.

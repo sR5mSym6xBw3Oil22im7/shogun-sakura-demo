@@ -1,81 +1,71 @@
 package com.shogunsakura.demo.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shogunsakura.demo.model.OrderReceipt;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
+import java.sql.ResultSet;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
+@ExtendWith(MockitoExtension.class)
 class OrderRepositoryTest {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
-
-  @TempDir
-  Path tempDir;
+  @Mock
+  JdbcTemplate jdbcTemplate;
 
   @Test
-  void saveAppendsJsonLineAndReturnsIncrementingId() throws Exception {
-    Path storagePath = tempDir.resolve("orders.txt");
-    OrderRepository repository = new OrderRepository(OBJECT_MAPPER, storagePath.toString());
+  void saveMapsInsertedOrderToReceipt() throws Exception {
+    OffsetDateTime createdAt = OffsetDateTime.parse("2026-07-08T12:34:56+09:00");
 
-    OrderReceipt first = repository.save(
+    when(jdbcTemplate.queryForObject(anyString(), any(RowMapper.class), any(Object[].class)))
+        .thenAnswer(invocation -> {
+          @SuppressWarnings("unchecked")
+          RowMapper<OrderReceipt> rowMapper = invocation.getArgument(1);
+          ResultSet resultSet = mock(ResultSet.class);
+          when(resultSet.getLong("id")).thenReturn(101L);
+          when(resultSet.getObject("created_at", OffsetDateTime.class)).thenReturn(createdAt);
+          return rowMapper.mapRow(resultSet, 0);
+        });
+
+    OrderRepository repository = new OrderRepository(jdbcTemplate);
+    OrderReceipt receipt = repository.save(
         "SAKURA_SHOGUN_SET",
-        "Test Product",
+        "SHOGUN SAKURA Demo Set",
         "Taro Yamada",
-        "test@example.com",
+        "taro@example.com",
         "100-0001",
         "Tokyo 1-1-1",
         2,
         4800,
         9600,
-        "First order");
+        "Demo order");
 
-    OrderReceipt second = repository.save(
-        "SAKURA_SHOGUN_SET",
-        "Test Product",
-        "Hanako Yamada",
-        "hanako@example.com",
-        null,
-        "Tokyo 2-2-2",
-        1,
-        4800,
-        4800,
-        null);
+    assertThat(receipt.id()).isEqualTo(101L);
+    assertThat(receipt.createdAt()).isEqualTo(createdAt);
 
-    List<String> lines = Files.readAllLines(storagePath);
-
-    assertThat(first.id()).isEqualTo(1L);
-    assertThat(second.id()).isEqualTo(2L);
-    assertThat(lines).hasSize(2);
-    assertThat(lines.get(0)).contains("\"customerName\":\"Taro Yamada\"");
-    assertThat(lines.get(1)).contains("\"customerName\":\"Hanako Yamada\"");
-  }
-
-  @Test
-  void saveContinuesFromExistingFile() throws Exception {
-    Path storagePath = tempDir.resolve("orders.txt");
-    Files.writeString(storagePath, """
-        {"id":7,"createdAt":"2026-07-08T00:00:00+09:00","productCode":"A"}
-        {"id":8,"createdAt":"2026-07-08T00:01:00+09:00","productCode":"B"}
-        """.trim() + System.lineSeparator());
-
-    OrderRepository repository = new OrderRepository(OBJECT_MAPPER, storagePath.toString());
-    OrderReceipt receipt = repository.save(
-        "SAKURA_SHOGUN_SET",
-        "Test Product",
-        "Taro Yamada",
-        "test@example.com",
-        null,
-        "Tokyo 1-1-1",
-        1,
-        4800,
-        4800,
-        null);
-
-    assertThat(receipt.id()).isEqualTo(9L);
+    verify(jdbcTemplate).queryForObject(
+        anyString(),
+        any(RowMapper.class),
+        eq("SAKURA_SHOGUN_SET"),
+        eq("SHOGUN SAKURA Demo Set"),
+        eq("Taro Yamada"),
+        eq("taro@example.com"),
+        eq("100-0001"),
+        eq("Tokyo 1-1-1"),
+        eq(2),
+        eq(4800),
+        eq(9600),
+        eq("Demo order"));
   }
 }

@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGSERIAL PRIMARY KEY,
+  product_code VARCHAR(50) NOT NULL,
+  product_name VARCHAR(100) NOT NULL,
+  customer_name VARCHAR(50) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  postal_code VARCHAR(10),
+  address VARCHAR(200) NOT NULL,
+  quantity INTEGER NOT NULL CHECK (quantity BETWEEN 1 AND 9),
+  unit_price INTEGER NOT NULL,
+  total_amount INTEGER NOT NULL,
+  note VARCHAR(200),
+  demo_order BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

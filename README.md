@@ -10,7 +10,7 @@ Portfolio-style demo site with a GitHub Pages frontend and a Render backend.
 ## Notes
 
 - The frontend sends order requests to the backend API.
-- The backend stores order data in a text file instead of PostgreSQL.
+- The backend saves order data to Render PostgreSQL.
 - This is a demo project, so payment, shipping, and inventory management are not implemented.
 
 ## Local Run
@@ -32,7 +32,7 @@ mvn spring-boot:run
 
 - Docker Web Service
 - Health check: `/api/health`
-- Order storage path: `ORDER_STORAGE_PATH`
+- Environment variables: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `ALLOWED_ORIGINS`
 
 ## CORS
 

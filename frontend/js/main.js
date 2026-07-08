@@ -21,13 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!validation.isValid) {
       applyFieldErrors(form, fieldErrorMap, validation.fieldErrors);
-      setStatus(statusEl, '入力内容を確認してください。', 'error');
+      setStatus(statusEl, 'Please check the form fields.', 'error');
       focusFirstInvalidField(form, validation.fieldErrors);
       return;
     }
 
     setLoadingState(submitButton, true);
-    setStatus(statusEl, '注文データを送信しています...', 'pending');
+    setStatus(statusEl, 'Sending order data...', 'pending');
 
     try {
       const response = await fetch(`${apiBaseUrl}/api/orders`, {
@@ -47,13 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setStatus(
           statusEl,
-          data?.message || '現在、注文を受け付けできません。時間をおいて再度お試しください。',
+          data?.message || 'We could not accept the order right now. Please try again later.',
           'error'
         );
         return;
       }
 
-      setStatus(statusEl, `注文を受け付けました。注文番号: ${data.orderId}`, 'success');
+      setStatus(
+        statusEl,
+        data?.message ? `${data.message} Order ID: ${data.orderId}` : `Order received. Order ID: ${data.orderId}`,
+        'success'
+      );
       form.reset();
 
       const quantityField = form.elements.quantity;
@@ -63,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {
       setStatus(
         statusEl,
-        '現在、注文を受け付けできません。時間をおいて再度お試しください。',
+        'We could not accept the order right now. Please try again later.',
         'error'
       );
     } finally {
@@ -101,40 +105,40 @@ function validatePayload(payload) {
   const normalized = { ...payload };
 
   if (!normalized.name) {
-    fieldErrors.name = 'お名前を入力してください。';
+    fieldErrors.name = 'Please enter your name.';
   } else if (normalized.name.length > 50) {
-    fieldErrors.name = 'お名前は50文字以内で入力してください。';
+    fieldErrors.name = 'Name must be 50 characters or fewer.';
   }
 
   if (!normalized.email) {
-    fieldErrors.email = 'メールアドレスを入力してください。';
+    fieldErrors.email = 'Please enter your email address.';
   } else if (normalized.email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
-    fieldErrors.email = '正しいメールアドレス形式で入力してください。';
+    fieldErrors.email = 'Please enter a valid email address.';
   }
 
   if (normalized.postalCode && (!/^[0-9-]+$/.test(normalized.postalCode) || normalized.postalCode.length > 8)) {
-    fieldErrors.postalCode = '郵便番号は数字とハイフンのみ、8文字以内で入力してください。';
+    fieldErrors.postalCode = 'Postal code may contain only numbers and hyphens, up to 8 characters.';
   }
 
   if (!normalized.address) {
-    fieldErrors.address = '住所を入力してください。';
+    fieldErrors.address = 'Please enter your address.';
   } else if (normalized.address.length > 200) {
-    fieldErrors.address = '住所は200文字以内で入力してください。';
+    fieldErrors.address = 'Address must be 200 characters or fewer.';
   }
 
   if (normalized.quantity === '') {
-    fieldErrors.quantity = '数量を入力してください。';
+    fieldErrors.quantity = 'Please enter the quantity.';
   } else {
     const quantity = Number(normalized.quantity);
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > 9) {
-      fieldErrors.quantity = '数量は1から9の範囲で入力してください。';
+      fieldErrors.quantity = 'Quantity must be between 1 and 9.';
     } else {
       normalized.quantity = quantity;
     }
   }
 
   if (normalized.note && normalized.note.length > 200) {
-    fieldErrors.note = '備考は200文字以内で入力してください。';
+    fieldErrors.note = 'Note must be 200 characters or fewer.';
   }
 
   return {
@@ -198,7 +202,7 @@ function setLoadingState(button, isLoading) {
   }
 
   button.disabled = isLoading;
-  button.textContent = isLoading ? '送信中...' : '購入デモを送信';
+  button.textContent = isLoading ? 'Sending...' : 'Place Order';
 }
 
 function focusFirstInvalidField(form, fieldErrors) {
