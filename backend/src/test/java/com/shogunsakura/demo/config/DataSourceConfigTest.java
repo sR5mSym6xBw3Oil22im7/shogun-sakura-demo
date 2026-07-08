@@ -8,42 +8,45 @@ import org.springframework.mock.env.MockEnvironment;
 class DataSourceConfigTest {
 
   @Test
-  void normalizeJdbcUrlConvertsRenderPostgresUrl() {
-    assertThat(DataSourceConfig.normalizeJdbcUrl("postgres://user:pass@example.com:5432/demo"))
-        .isEqualTo("jdbc:postgresql://example.com:5432/demo");
-  }
-
-  @Test
-  void normalizeJdbcUrlKeepsJdbcUrlAsIs() {
-    assertThat(DataSourceConfig.normalizeJdbcUrl("jdbc:postgresql://example.com:5432/demo"))
-        .isEqualTo("jdbc:postgresql://example.com:5432/demo");
-  }
-
-  @Test
-  void resolveConnectionSettingsPrefersDatabaseUrlCredentials() {
+  void resolveConnectionSettingsUsesPgVariablesAndAddsSslMode() {
     MockEnvironment environment = new MockEnvironment()
-        .withProperty("DATABASE_URL", "postgres://render_user:render_pass@example.com:5432/demo")
-        .withProperty("DATABASE_USERNAME", "wrong_user")
-        .withProperty("DATABASE_PASSWORD", "wrong_pass");
+        .withProperty("PGHOST", "dpg-d96dt3eq1p3s73bvlueg-a.oregon-postgres.render.com")
+        .withProperty("PGPORT", "5432")
+        .withProperty("PGDATABASE", "shogun_sakura")
+        .withProperty("PGUSER", "shogun_sakura_user")
+        .withProperty("PGPASSWORD", "secret");
 
     DataSourceConfig.ConnectionSettings settings = DataSourceConfig.resolveConnectionSettings(environment);
 
-    assertThat(settings.jdbcUrl()).isEqualTo("jdbc:postgresql://example.com:5432/demo");
-    assertThat(settings.username()).isEqualTo("render_user");
-    assertThat(settings.password()).isEqualTo("render_pass");
+    assertThat(settings.jdbcUrl())
+        .isEqualTo("jdbc:postgresql://dpg-d96dt3eq1p3s73bvlueg-a.oregon-postgres.render.com:5432/shogun_sakura?sslmode=require");
+    assertThat(settings.username()).isEqualTo("shogun_sakura_user");
+    assertThat(settings.password()).isEqualTo("secret");
   }
 
   @Test
-  void resolveConnectionSettingsFallsBackToSeparateValues() {
+  void resolveConnectionSettingsUsesDatabaseUrlAndKeepsSslMode() {
     MockEnvironment environment = new MockEnvironment()
-        .withProperty("DATABASE_INTERNAL_URL", "postgresql://example.com:5432/demo")
-        .withProperty("DATABASE_USERNAME", "demo_user")
-        .withProperty("DATABASE_PASSWORD", "demo_pass");
+        .withProperty(
+            "DATABASE_URL",
+            "postgresql://shogun_sakura_user:secret@dpg-d96dt3eq1p3s73bvlueg-a.oregon-postgres.render.com:5432/shogun_sakura?sslmode=require");
 
     DataSourceConfig.ConnectionSettings settings = DataSourceConfig.resolveConnectionSettings(environment);
 
-    assertThat(settings.jdbcUrl()).isEqualTo("jdbc:postgresql://example.com:5432/demo");
-    assertThat(settings.username()).isEqualTo("demo_user");
-    assertThat(settings.password()).isEqualTo("demo_pass");
+    assertThat(settings.jdbcUrl())
+        .isEqualTo("jdbc:postgresql://dpg-d96dt3eq1p3s73bvlueg-a.oregon-postgres.render.com:5432/shogun_sakura?sslmode=require");
+    assertThat(settings.username()).isEqualTo("shogun_sakura_user");
+    assertThat(settings.password()).isEqualTo("secret");
+  }
+
+  @Test
+  void resolveConnectionSettingsFallsBackToLocalDefaults() {
+    MockEnvironment environment = new MockEnvironment();
+
+    DataSourceConfig.ConnectionSettings settings = DataSourceConfig.resolveConnectionSettings(environment);
+
+    assertThat(settings.jdbcUrl()).isEqualTo("jdbc:postgresql://localhost:5432/shogun_sakura");
+    assertThat(settings.username()).isEqualTo("postgres");
+    assertThat(settings.password()).isEqualTo("postgres");
   }
 }
