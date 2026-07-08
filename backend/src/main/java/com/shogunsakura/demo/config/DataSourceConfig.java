@@ -31,6 +31,7 @@ public class DataSourceConfig {
   }
 
   static ConnectionSettings resolveConnectionSettings(Environment environment) {
+    boolean runningOnRender = StringUtils.hasText(environment.getProperty("PORT"));
     ConnectionSettings fromPgVariables = resolveFromPgVariables(environment);
     if (fromPgVariables != null) {
       return fromPgVariables;
@@ -39,6 +40,12 @@ public class DataSourceConfig {
     ConnectionSettings fromDatabaseUrl = resolveFromDatabaseUrl(environment);
     if (fromDatabaseUrl != null) {
       return fromDatabaseUrl;
+    }
+
+    if (runningOnRender) {
+      throw new IllegalStateException(
+          "Missing PostgreSQL configuration for Render. Set PGHOST, PGPORT, PGDATABASE, PGUSER and PGPASSWORD, "
+              + "or DATABASE_URL.");
     }
 
     return new ConnectionSettings(

@@ -1,6 +1,7 @@
 package com.shogunsakura.demo.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
@@ -48,5 +49,15 @@ class DataSourceConfigTest {
     assertThat(settings.jdbcUrl()).isEqualTo("jdbc:postgresql://localhost:5432/shogun_sakura");
     assertThat(settings.username()).isEqualTo("postgres");
     assertThat(settings.password()).isEqualTo("postgres");
+  }
+
+  @Test
+  void resolveConnectionSettingsFailsFastOnRenderWithoutDatabaseConfig() {
+    MockEnvironment environment = new MockEnvironment()
+        .withProperty("PORT", "10000");
+
+    assertThatThrownBy(() -> DataSourceConfig.resolveConnectionSettings(environment))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("Missing PostgreSQL configuration for Render");
   }
 }

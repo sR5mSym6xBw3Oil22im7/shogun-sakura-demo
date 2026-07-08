@@ -18,11 +18,9 @@ This backend is deployed as a Render Web Service using Docker.
 
 Set the PostgreSQL connection values in the same style as the `psql` command shown in `render.psql.txt`:
 
-- `PGHOST`
-- `PGPORT`
-- `PGDATABASE`
-- `PGUSER`
-- `PGPASSWORD`
+- `DATABASE_URL`
+- `DATABASE_USERNAME`
+- `DATABASE_PASSWORD`
 - `ALLOWED_ORIGINS`
 
 The backend builds a JDBC connection from those values and enables SSL for Render PostgreSQL.

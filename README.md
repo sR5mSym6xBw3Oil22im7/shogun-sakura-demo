@@ -32,7 +32,7 @@ mvn spring-boot:run
 
 - Docker Web Service
 - Health check: `/api/health`
-- Environment variables: `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `ALLOWED_ORIGINS`
+- Environment variables: `DATABASE_URL`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `ALLOWED_ORIGINS`
 
 ## CORS
 
