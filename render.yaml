@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: shogun-sakura-demo-backend
+    name: shogun-sakura-demo
     runtime: docker
     dockerContext: backend
     dockerfilePath: backend/Dockerfile

@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function resolveApiBaseUrl() {
-  const raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'http://localhost:8080';
+  const raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
   return raw.replace(/\/+$/, '');
 }
 

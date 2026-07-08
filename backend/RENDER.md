@@ -1,21 +1,28 @@
 # Render Deployment
 
-このバックエンドは Render Web Service として `Docker` でデプロイします。
+This backend is deployed as a Render Web Service using Docker.
 
-## 設定
+## Service
 
-- Language: `Docker`
-- Dockerfile Path: `backend/Dockerfile`
-- Health Check Path: `/api/health`
+- Name: `shogun-sakura-demo`
+- URL: `https://shogun-sakura-demo.onrender.com/`
+- Root directory: `backend`
+- Dockerfile: `backend/Dockerfile`
 
-## 環境変数
+## Settings
+
+- Health check path: `/api/health`
+- Auto deploy: on commit
+
+## Environment Variables
 
 - `PORT`
 - `ORDER_STORAGE_PATH`
 - `ALLOWED_ORIGINS`
 
-`ORDER_STORAGE_PATH` は注文データを書き込むテキストファイルの保存先です。Render では例として `/tmp/shogun-sakura/orders.txt` を使います。
+`ORDER_STORAGE_PATH` points to the text file used for order storage. On Render, we use `/tmp/shogun-sakura/orders.txt`.
 
-## 補足
+## Notes
 
-PostgreSQL は使いません。注文は JSON Lines 形式のテキストファイルに追記されます。
+- PostgreSQL is not used.
+- Orders are appended as JSON Lines in a text file.
