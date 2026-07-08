@@ -5,7 +5,6 @@ import com.shogunsakura.demo.dto.OrderResponse;
 import com.shogunsakura.demo.model.OrderReceipt;
 import com.shogunsakura.demo.repository.OrderRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrderService {
@@ -20,7 +19,6 @@ public class OrderService {
     this.orderRepository = orderRepository;
   }
 
-  @Transactional
   public OrderResponse createOrder(CreateOrderRequest request) {
     int totalAmount = UNIT_PRICE * request.quantity();
     OrderReceipt receipt = orderRepository.save(
