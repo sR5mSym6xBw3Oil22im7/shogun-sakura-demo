@@ -1,22 +1,28 @@
 package com.shogunsakura.demo.service;
 
 import com.shogunsakura.demo.dto.CreateOrderRequest;
+import com.shogunsakura.demo.dto.OrderHistoryResponse;
 import com.shogunsakura.demo.dto.OrderResponse;
 import com.shogunsakura.demo.model.OrderReceipt;
+import com.shogunsakura.demo.repository.OrderHistoryRepository;
 import com.shogunsakura.demo.repository.OrderRepository;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OrderService {
 
   private static final String PRODUCT_CODE = "SAKURA_SHOGUN_SET";
-  private static final String PRODUCT_NAME = "桜の押し花と白扇「将軍」セット";
+  private static final String PRODUCT_NAME = "SHOGUN SAKURA SET";
   private static final int UNIT_PRICE = 4800;
 
   private final OrderRepository orderRepository;
+  private final OrderHistoryRepository orderHistoryRepository;
 
-  public OrderService(OrderRepository orderRepository) {
+  public OrderService(OrderRepository orderRepository,
+                      OrderHistoryRepository orderHistoryRepository) {
     this.orderRepository = orderRepository;
+    this.orderHistoryRepository = orderHistoryRepository;
   }
 
   public OrderResponse createOrder(CreateOrderRequest request) {
@@ -34,6 +40,10 @@ public class OrderService {
         normalizeOptional(request.note()));
 
     return new OrderResponse(receipt.id(), "注文を受け付けました。", receipt.createdAt());
+  }
+
+  public List<OrderHistoryResponse> getOrderHistory() {
+    return orderHistoryRepository.findAll();
   }
 
   private String normalizeOptional(String value) {

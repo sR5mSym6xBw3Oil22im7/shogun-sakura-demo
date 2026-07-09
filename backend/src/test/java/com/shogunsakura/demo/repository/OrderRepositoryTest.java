@@ -2,32 +2,27 @@ package com.shogunsakura.demo.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shogunsakura.demo.model.OrderReceipt;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.Map;
-import javax.sql.DataSource;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.junit.jupiter.api.io.TempDir;
 
 class OrderRepositoryTest {
 
-  @Test
-  void saveReturnsGeneratedId() {
-    JdbcTemplate jdbcTemplate = new JdbcTemplate(new NoOpDataSource()) {
-      @Override
-      public int update(PreparedStatementCreator psc, KeyHolder generatedKeyHolder) {
-        ((GeneratedKeyHolder) generatedKeyHolder).getKeyList().add(Map.of("id", 7L));
-        return 1;
-      }
-    };
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
-    OrderRepository repository = new OrderRepository(jdbcTemplate);
-    OrderReceipt receipt = repository.save(
+  @TempDir
+  Path tempDir;
+
+  @Test
+  void saveAppendsJsonLineAndReturnsIncrementingId() throws Exception {
+    Path storagePath = tempDir.resolve("orders.txt");
+    OrderRepository repository = new OrderRepository(OBJECT_MAPPER, storagePath.toString());
+
+    OrderReceipt first = repository.save(
         "SAKURA_SHOGUN_SET",
         "Test Product",
         "Taro Yamada",
@@ -39,54 +34,48 @@ class OrderRepositoryTest {
         9600,
         "First order");
 
-    assertThat(receipt.id()).isEqualTo(7L);
-    assertThat(receipt.createdAt()).isNotNull();
+    OrderReceipt second = repository.save(
+        "SAKURA_SHOGUN_SET",
+        "Test Product",
+        "Hanako Yamada",
+        "hanako@example.com",
+        null,
+        "Tokyo 2-2-2",
+        1,
+        4800,
+        4800,
+        null);
+
+    List<String> lines = Files.readAllLines(storagePath);
+
+    assertThat(first.id()).isEqualTo(1L);
+    assertThat(second.id()).isEqualTo(2L);
+    assertThat(lines).hasSize(2);
+    assertThat(lines.get(0)).contains("\"customerName\":\"Taro Yamada\"");
+    assertThat(lines.get(1)).contains("\"customerName\":\"Hanako Yamada\"");
   }
 
-  private static final class NoOpDataSource implements DataSource {
-    @Override
-    public Connection getConnection() {
-      throw new UnsupportedOperationException();
-    }
+  @Test
+  void saveContinuesFromExistingFile() throws Exception {
+    Path storagePath = tempDir.resolve("orders.txt");
+    Files.writeString(storagePath, """
+        {"id":7,"createdAt":"2026-07-08T00:00:00+09:00","productCode":"A"}
+        {"id":8,"createdAt":"2026-07-08T00:01:00+09:00","productCode":"B"}
+        """.trim() + System.lineSeparator());
 
-    @Override
-    public Connection getConnection(String username, String password) {
-      throw new UnsupportedOperationException();
-    }
+    OrderRepository repository = new OrderRepository(OBJECT_MAPPER, storagePath.toString());
+    OrderReceipt receipt = repository.save(
+        "SAKURA_SHOGUN_SET",
+        "Test Product",
+        "Taro Yamada",
+        "test@example.com",
+        null,
+        "Tokyo 1-1-1",
+        1,
+        4800,
+        4800,
+        null);
 
-    @Override
-    public <T> T unwrap(Class<T> iface) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) {
-      return false;
-    }
-
-    @Override
-    public java.io.PrintWriter getLogWriter() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setLogWriter(java.io.PrintWriter out) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setLoginTimeout(int seconds) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int getLoginTimeout() {
-      return 0;
-    }
-
-    @Override
-    public java.util.logging.Logger getParentLogger() {
-      throw new UnsupportedOperationException();
-    }
+    assertThat(receipt.id()).isEqualTo(9L);
   }
 }

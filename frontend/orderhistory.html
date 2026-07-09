@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="注文履歴を一覧表示するページです。">
+  <title>注文履歴一覧表示 | SHOGUN SAKURA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="history-page">
+  <header class="topbar">
+    <div class="brand">SHOGUN SAKURA</div>
+    <div class="header-right">
+      <nav class="global-nav" aria-label="注文画面へのリンク">
+        <a href="index.html">注文画面</a>
+      </nav>
+      <div class="demo-badge">Order History Demo</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero history-hero">
+      <div class="copy">
+        <p class="sub">Order History / Render PostgreSQL</p>
+        <h1>注文履歴一覧表示</h1>
+        <p>
+          Render の Web Service が受領した注文データを、Render PostgreSQL の
+          <code>orders</code> テーブルから一覧表示します。
+        </p>
+        <a class="btn" href="index.html">注文画面へ戻る</a>
+      </div>
+      <div class="history-summary">
+        <div class="history-summary-card">
+          <p class="sub">Data Source</p>
+          <h2>注文履歴の確認</h2>
+          <p>
+            最新の注文から順に表示します。表示できない場合は、Web Service と
+            PostgreSQL の接続状態を確認してください。
+          </p>
+          <dl class="history-summary-list">
+            <div>
+              <dt>取得先</dt>
+              <dd>/api/orders</dd>
+            </div>
+            <div>
+              <dt>保存先</dt>
+              <dd>orders table</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="purchase history-section" id="history">
+      <div class="purchase-card">
+        <p class="sub">Order List</p>
+        <h2>注文履歴一覧</h2>
+        <p>注文番号、氏名、数量、合計金額、登録日時を一覧で確認できます。</p>
+
+        <div class="history-status" data-history-status aria-live="polite"></div>
+        <div class="history-table-shell">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>注文ID</th>
+                <th>商品名</th>
+                <th>氏名</th>
+                <th>メール</th>
+                <th>郵便番号</th>
+                <th>住所</th>
+                <th>数量</th>
+                <th>合計金額</th>
+                <th>備考</th>
+                <th>登録日時</th>
+              </tr>
+            </thead>
+            <tbody data-history-body></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>SHOGUN SAKURA / Order History Demo</footer>
+
+  <script>
+    window.API_BASE_URL = (
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1' ||
+      location.protocol === 'file:'
+    )
+      ? 'http://localhost:8080'
+      : 'https://shogun-sakura-demo.onrender.com';
+  </script>
+  <script src="js/orderhistory.js"></script>
+</body>
+</html>
