@@ -41,6 +41,23 @@ class DataSourceConfigTest {
   }
 
   @Test
+  void resolveConnectionSettingsUsesRenderWebServiceVariables() {
+    MockEnvironment environment = new MockEnvironment()
+        .withProperty("DB_HOST", "dpg-df9e4ic8aq0b73uv1ouq-a")
+        .withProperty("DB_NAME", "shogun_sakura")
+        .withProperty("DB_PORT", "5432")
+        .withProperty("SPRING_DATASOURCE_USERNAME", "shogun_sakura_user")
+        .withProperty("SPRING_DATASOURCE_PASSWORD", "secret");
+
+    DataSourceConfig.ConnectionSettings settings = DataSourceConfig.resolveConnectionSettings(environment);
+
+    assertThat(settings.jdbcUrl())
+        .isEqualTo("jdbc:postgresql://dpg-df9e4ic8aq0b73uv1ouq-a:5432/shogun_sakura?sslmode=require");
+    assertThat(settings.username()).isEqualTo("shogun_sakura_user");
+    assertThat(settings.password()).isEqualTo("secret");
+  }
+
+  @Test
   void resolveConnectionSettingsFallsBackToLocalDefaults() {
     MockEnvironment environment = new MockEnvironment();
 

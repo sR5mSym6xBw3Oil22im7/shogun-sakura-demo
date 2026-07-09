@@ -9,11 +9,17 @@ services:
     envVars:
       - key: PORT
         sync: false
-      - key: DATABASE_URL
+      - key: DB_HOST
         sync: false
-      - key: DATABASE_USERNAME
+      - key: DB_NAME
         sync: false
-      - key: DATABASE_PASSWORD
+      - key: DB_PORT
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
         sync: false
       - key: ALLOWED_ORIGINS
         value: http://localhost:5500,http://127.0.0.1:5500,https://sr5msym6xbw3oil22im7.github.io

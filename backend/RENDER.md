@@ -16,11 +16,14 @@ This backend is deployed as a Render Web Service using Docker.
 
 ## Environment Variables
 
-Set the PostgreSQL connection values in the same style as the `psql` command shown in `render.psql.txt`:
+Set the PostgreSQL connection values using the same keys shown in the Render Web Service screenshot:
 
-- `DATABASE_URL`
-- `DATABASE_USERNAME`
-- `DATABASE_PASSWORD`
+- `DB_HOST`
+- `DB_NAME`
+- `DB_PORT`
+- `SPRING_DATASOURCE_PASSWORD`
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
 - `ALLOWED_ORIGINS`
 
 The backend builds a JDBC connection from those values and enables SSL for Render PostgreSQL.

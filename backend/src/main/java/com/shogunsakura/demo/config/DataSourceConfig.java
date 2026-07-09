@@ -44,8 +44,8 @@ public class DataSourceConfig {
 
     if (runningOnRender) {
       throw new IllegalStateException(
-          "Missing PostgreSQL configuration for Render. Set PGHOST, PGPORT, PGDATABASE, PGUSER and PGPASSWORD, "
-              + "or DATABASE_URL.");
+          "Missing PostgreSQL configuration for Render. Set DB_HOST, DB_PORT, DB_NAME, SPRING_DATASOURCE_USERNAME "
+              + "and SPRING_DATASOURCE_PASSWORD, or DATABASE_URL.");
     }
 
     return new ConnectionSettings(
