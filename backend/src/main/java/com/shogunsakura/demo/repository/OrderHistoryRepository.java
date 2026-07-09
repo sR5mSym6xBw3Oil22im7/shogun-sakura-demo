@@ -27,7 +27,7 @@ public class OrderHistoryRepository {
         note,
         created_at
       FROM orders
-      ORDER BY created_at DESC, id DESC
+      ORDER BY id ASC
       """;
 
   private final JdbcTemplate jdbcTemplate;
