@@ -1,10 +1,16 @@
 package com.shogunsakura.demo.config;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.net.URI;
 import java.util.Locale;
+import javax.sql.DataSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
+@Configuration
 public class DataSourceConfig {
 
   private static final String DEFAULT_LOCAL_HOST = "localhost";
@@ -12,6 +18,17 @@ public class DataSourceConfig {
   private static final String DEFAULT_LOCAL_DATABASE = "shogun_sakura";
   private static final String DEFAULT_LOCAL_USERNAME = "postgres";
   private static final String DEFAULT_LOCAL_PASSWORD = "postgres";
+
+  @Bean
+  public DataSource dataSource(Environment environment) {
+    ConnectionSettings settings = resolveConnectionSettings(environment);
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl(settings.jdbcUrl());
+    config.setUsername(settings.username());
+    config.setPassword(settings.password());
+    config.setDriverClassName("org.postgresql.Driver");
+    return new HikariDataSource(config);
+  }
 
   static ConnectionSettings resolveConnectionSettings(Environment environment) {
     String jdbcUrl = resolveJdbcUrl(environment);
@@ -22,28 +39,17 @@ public class DataSourceConfig {
 
   static String resolveJdbcUrl(Environment environment) {
     String explicitUrl = firstText(
-        environment.getProperty("SPRING_DATASOURCE_URL"),
-        environment.getProperty("SPRING_DATASOURCE_UR"),
-        environment.getProperty("DATABASE_URL"),
-        environment.getProperty("DATABASE_INTERNAL_URL"),
-        environment.getProperty("RENDER_DATABASE_URL"),
-        environment.getProperty("RENDER_DATABASE_INTERNAL_URL"));
+        environment.getProperty("SPRING_DATASOURCE_URL"));
     if (StringUtils.hasText(explicitUrl)) {
       return normalizeJdbcUrl(explicitUrl);
     }
 
     String host = firstText(
-        environment.getProperty("DB_HOST"),
-        environment.getProperty("PGHOST"),
-        environment.getProperty("DATABASE_HOST"));
+        environment.getProperty("DB_HOST"));
     String database = firstText(
-        environment.getProperty("DB_NAME"),
-        environment.getProperty("PGDATABASE"),
-        environment.getProperty("DATABASE_NAME"));
+        environment.getProperty("DB_NAME"));
     String port = firstText(
-        environment.getProperty("DB_PORT"),
-        environment.getProperty("PGPORT"),
-        environment.getProperty("DATABASE_PORT"));
+        environment.getProperty("DB_PORT"));
 
     if (StringUtils.hasText(host) || StringUtils.hasText(database) || StringUtils.hasText(port)) {
       String resolvedHost = defaultIfBlank(host, DEFAULT_LOCAL_HOST);
@@ -58,16 +64,12 @@ public class DataSourceConfig {
   static String resolveUsername(Environment environment) {
     return firstText(
         environment.getProperty("SPRING_DATASOURCE_USERNAME"),
-        environment.getProperty("PGUSER"),
-        environment.getProperty("DATABASE_USERNAME"),
         DEFAULT_LOCAL_USERNAME);
   }
 
   static String resolvePassword(Environment environment) {
     return firstText(
         environment.getProperty("SPRING_DATASOURCE_PASSWORD"),
-        environment.getProperty("PGPASSWORD"),
-        environment.getProperty("DATABASE_PASSWORD"),
         DEFAULT_LOCAL_PASSWORD);
   }
 
