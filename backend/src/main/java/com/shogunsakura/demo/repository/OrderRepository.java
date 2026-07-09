@@ -1,121 +1,75 @@
 package com.shogunsakura.demo.repository;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shogunsakura.demo.model.OrderReceipt;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.concurrent.atomic.AtomicLong;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class OrderRepository {
 
   private static final ZoneId TOKYO_ZONE = ZoneId.of("Asia/Tokyo");
-
-  private final ObjectMapper objectMapper;
-  private final Path storagePath;
-  private final AtomicLong nextId;
-
-  public OrderRepository(
-      ObjectMapper objectMapper,
-      @Value("${app.order-storage.path:./data/orders.txt}") String storagePath) {
-    this.objectMapper = objectMapper;
-    this.storagePath = Paths.get(storagePath);
-    this.nextId = new AtomicLong(loadNextId());
-  }
-
-  public synchronized OrderReceipt save(String productCode,
-                                        String productName,
-                                        String customerName,
-                                        String email,
-                                        String postalCode,
-                                        String address,
-                                        int quantity,
-                                        int unitPrice,
-                                        int totalAmount,
-                                        String note) {
-    long id = nextId.getAndIncrement();
-    OffsetDateTime createdAt = OffsetDateTime.now(TOKYO_ZONE);
-    OrderEntry entry = new OrderEntry(
-        id,
-        createdAt,
-        productCode,
-        productName,
-        customerName,
+  private static final String INSERT_SQL = """
+      INSERT INTO orders (
+        product_code,
+        product_name,
+        customer_name,
         email,
-        postalCode,
+        postal_code,
         address,
         quantity,
-        unitPrice,
-        totalAmount,
-        note);
+        unit_price,
+        total_amount,
+        note,
+        demo_order,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, ?)
+      """;
 
-    appendEntry(entry);
-    return new OrderReceipt(id, createdAt);
+  private final JdbcTemplate jdbcTemplate;
+
+  public OrderRepository(JdbcTemplate jdbcTemplate) {
+    this.jdbcTemplate = jdbcTemplate;
   }
 
-  private long loadNextId() {
-    if (!Files.exists(storagePath)) {
-      return 1L;
+  public OrderReceipt save(String productCode,
+                           String productName,
+                           String customerName,
+                           String email,
+                           String postalCode,
+                           String address,
+                           int quantity,
+                           int unitPrice,
+                           int totalAmount,
+                           String note) {
+    OffsetDateTime createdAt = OffsetDateTime.now(TOKYO_ZONE);
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+
+    int updated = jdbcTemplate.update(connection -> {
+      PreparedStatement statement = connection.prepareStatement(INSERT_SQL, new String[] {"id"});
+      statement.setString(1, productCode);
+      statement.setString(2, productName);
+      statement.setString(3, customerName);
+      statement.setString(4, email);
+      statement.setString(5, postalCode);
+      statement.setString(6, address);
+      statement.setInt(7, quantity);
+      statement.setInt(8, unitPrice);
+      statement.setInt(9, totalAmount);
+      statement.setString(10, note);
+      statement.setObject(11, createdAt);
+      return statement;
+    }, keyHolder);
+
+    if (updated != 1 || keyHolder.getKey() == null) {
+      throw new IllegalStateException("Failed to save order.");
     }
 
-    long maxId = 0L;
-    try {
-      for (String line : Files.readAllLines(storagePath, StandardCharsets.UTF_8)) {
-        if (!line.isBlank()) {
-          try {
-            JsonNode node = objectMapper.readTree(line);
-            maxId = Math.max(maxId, node.path("id").asLong(0L));
-          } catch (IOException ignored) {
-            // Skip malformed lines and keep loading the rest of the file.
-          }
-        }
-      }
-    } catch (IOException ex) {
-      throw new UncheckedIOException("Failed to read order storage", ex);
-    }
-
-    return maxId + 1L;
-  }
-
-  private void appendEntry(OrderEntry entry) {
-    try {
-      Path parent = storagePath.getParent();
-      if (parent != null) {
-        Files.createDirectories(parent);
-      }
-
-      String json = objectMapper.writeValueAsString(entry);
-      Files.writeString(
-          storagePath,
-          json + System.lineSeparator(),
-          java.nio.file.StandardOpenOption.CREATE,
-          java.nio.file.StandardOpenOption.APPEND);
-    } catch (IOException ex) {
-      throw new UncheckedIOException("Failed to write order storage", ex);
-    }
-  }
-
-  private record OrderEntry(
-      long id,
-      OffsetDateTime createdAt,
-      String productCode,
-      String productName,
-      String customerName,
-      String email,
-      String postalCode,
-      String address,
-      int quantity,
-      int unitPrice,
-      int totalAmount,
-      String note) {
+    return new OrderReceipt(keyHolder.getKey().longValue(), createdAt);
   }
 }
