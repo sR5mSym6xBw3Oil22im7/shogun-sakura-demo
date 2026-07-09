@@ -3,8 +3,6 @@ package com.shogunsakura.demo.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -13,12 +11,9 @@ import org.springframework.util.StringUtils;
 public class RenderPostgresConnectionChecker implements CommandLineRunner {
 
   private final Environment environment;
-  private final ConfigurableApplicationContext applicationContext;
 
-  public RenderPostgresConnectionChecker(Environment environment,
-                                         ConfigurableApplicationContext applicationContext) {
+  public RenderPostgresConnectionChecker(Environment environment) {
     this.environment = environment;
-    this.applicationContext = applicationContext;
   }
 
   @Override
@@ -34,9 +29,6 @@ public class RenderPostgresConnectionChecker implements CommandLineRunner {
     try (Connection connection = DriverManager.getConnection(jdbcUrl, user, password)) {
       connection.close();
     }
-
-    int exitCode = SpringApplication.exit(applicationContext, () -> 0);
-    System.exit(exitCode);
   }
 
   private String required(String key) {
