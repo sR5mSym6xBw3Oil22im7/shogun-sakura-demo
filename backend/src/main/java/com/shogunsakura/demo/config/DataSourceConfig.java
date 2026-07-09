@@ -1,16 +1,10 @@
 package com.shogunsakura.demo.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.net.URI;
 import java.util.Locale;
-import javax.sql.DataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StringUtils;
 
-@Configuration
 public class DataSourceConfig {
 
   private static final String DEFAULT_LOCAL_HOST = "localhost";
@@ -18,17 +12,6 @@ public class DataSourceConfig {
   private static final String DEFAULT_LOCAL_DATABASE = "shogun_sakura";
   private static final String DEFAULT_LOCAL_USERNAME = "postgres";
   private static final String DEFAULT_LOCAL_PASSWORD = "postgres";
-
-  @Bean
-  public DataSource dataSource(Environment environment) {
-    ConnectionSettings settings = resolveConnectionSettings(environment);
-    HikariConfig config = new HikariConfig();
-    config.setJdbcUrl(settings.jdbcUrl());
-    config.setUsername(settings.username());
-    config.setPassword(settings.password());
-    config.setDriverClassName("org.postgresql.Driver");
-    return new HikariDataSource(config);
-  }
 
   static ConnectionSettings resolveConnectionSettings(Environment environment) {
     String jdbcUrl = resolveJdbcUrl(environment);
