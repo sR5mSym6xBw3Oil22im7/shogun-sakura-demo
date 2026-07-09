@@ -1,11 +1,14 @@
 package com.shogunsakura.demo.controller;
 
 import com.shogunsakura.demo.dto.CreateOrderRequest;
+import com.shogunsakura.demo.dto.OrderHistoryResponse;
 import com.shogunsakura.demo.dto.OrderResponse;
 import com.shogunsakura.demo.service.OrderService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,5 +27,10 @@ public class OrderController {
   @PostMapping
   public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(request));
+  }
+
+  @GetMapping
+  public ResponseEntity<List<OrderHistoryResponse>> getOrderHistory() {
+    return ResponseEntity.ok(orderService.getOrderHistory());
   }
 }

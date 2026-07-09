@@ -434,6 +434,112 @@ dd {
   color: var(--gold);
 }
 
+.history-page code {
+  color: #fff;
+  font-family: inherit;
+}
+
+.history-hero {
+  min-height: auto;
+  padding-bottom: 48px;
+}
+
+.history-summary-card {
+  background: linear-gradient(145deg, rgba(38, 32, 24, 0.96), rgba(22, 19, 17, 0.96));
+  border: 1px solid rgba(209, 168, 90, 0.3);
+  padding: clamp(24px, 4vw, 40px);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.34);
+}
+
+.history-summary-list {
+  display: grid;
+  gap: 14px;
+  margin: 24px 0 0;
+}
+
+.history-summary-list div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-summary-list dt {
+  color: var(--gold);
+}
+
+.history-summary-list dd {
+  color: var(--text);
+}
+
+.history-section {
+  padding-top: 0;
+}
+
+.history-status {
+  min-height: 24px;
+  margin: 16px 0 18px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.history-status.is-success {
+  color: var(--ok);
+}
+
+.history-status.is-error {
+  color: #ffb0b6;
+}
+
+.history-status.is-pending {
+  color: var(--gold);
+}
+
+.history-table-shell {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  background: rgba(8, 7, 6, 0.6);
+}
+
+.history-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  text-align: left;
+}
+
+.history-table th {
+  position: sticky;
+  top: 0;
+  background: rgba(38, 32, 24, 0.98);
+  color: var(--gold);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.history-table td {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.history-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.history-empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 30px 16px;
+}
+
 footer {
   padding: 36px;
   border-top: 1px solid var(--line);
@@ -482,6 +588,11 @@ footer {
 
   .header-right {
     margin-left: 0;
+  }
+
+  .history-summary-list div {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .hero {
