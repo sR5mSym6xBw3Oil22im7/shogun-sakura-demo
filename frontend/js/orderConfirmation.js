@@ -40,9 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await safeJson(response);
 
       if (!response.ok) {
+        const errorMessage =
+          response.status === 404 || data?.message === 'Not found'
+            ? '注文の送信に失敗しました。しばらくしてからもう一度お試しください。'
+            : data?.message || '注文の送信に失敗しました。しばらくしてからもう一度お試しください。';
         setStatus(
           statusEl,
-          data?.message || '注文の送信に失敗しました。しばらくしてからもう一度お試しください。',
+          errorMessage,
           'error'
         );
         button.disabled = false;
