@@ -189,6 +189,7 @@ p {
 }
 
 .gallery figure {
+  position: relative;
   margin: 0;
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
   border: 1px solid var(--line);
@@ -197,10 +198,22 @@ p {
 }
 
 .gallery figcaption {
-  color: var(--gold);
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  z-index: 1;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 64px);
+  padding: 8px 16px;
+  color: #fff8e9;
+  background: rgba(18, 16, 13, 0.78);
+  border: 1px solid rgba(210, 163, 69, 0.7);
+  backdrop-filter: blur(4px);
   font-weight: 800;
-  margin-top: 16px;
+  margin: 0;
   letter-spacing: 0.12em;
+  text-align: center;
 }
 
 .gallery .large {
@@ -227,7 +240,7 @@ p {
 }
 
 .gallery .small figcaption {
-  color: #6b4d21;
+  color: #fff8e9;
 }
 
 .demo-note {
