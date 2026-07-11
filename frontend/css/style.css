@@ -404,9 +404,27 @@ dd {
   color: rgba(201, 189, 168, 0.84);
 }
 
+.field-note--warning {
+  color: var(--gold);
+  min-height: 1.6em;
+  font-weight: 700;
+}
+
 .field-error {
   color: #ffb0b6;
   min-height: 1.6em;
+}
+
+.field input.prefilled-value,
+.field textarea.prefilled-value {
+  color: rgba(201, 189, 168, 0.84);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.field input.prefilled-value:focus,
+.field textarea.prefilled-value:focus {
+  color: rgba(201, 189, 168, 0.84);
 }
 
 .form-hint {
@@ -455,11 +473,29 @@ dd {
   padding-bottom: 48px;
 }
 
+.order-confirmed-page .history-hero {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+
 .history-summary-card {
   background: linear-gradient(145deg, rgba(38, 32, 24, 0.96), rgba(22, 19, 17, 0.96));
   border: 1px solid rgba(209, 168, 90, 0.3);
   padding: clamp(24px, 4vw, 40px);
   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.34);
+}
+
+.order-confirmed-card {
+  width: min(100%, 720px);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.order-confirmed-card .btn {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .history-hero--compact {
