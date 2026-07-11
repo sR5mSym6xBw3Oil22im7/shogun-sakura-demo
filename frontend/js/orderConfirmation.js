@@ -6,6 +6,7 @@
 
   const button = document.querySelector('[data-confirm-order-button]');
   const statusEl = document.querySelector('[data-confirmation-status]');
+  const lockTargets = Array.from(document.querySelectorAll('[data-confirmation-lock-target]'));
   const fieldMap = new Map(
     Array.from(document.querySelectorAll('[data-confirmation-field]')).map((element) => [
       element.dataset.confirmationField,
@@ -20,10 +21,12 @@
   const apiBaseUrl = resolveApiBaseUrl();
   const quantity = getStoredQuantity();
   const confirmationData = buildConfirmationData(quantity);
+  const originalButtonText = button.textContent;
 
   renderConfirmationData(fieldMap, confirmationData);
 
   button.addEventListener('click', async () => {
+    lockConfirmationUi(lockTargets);
     button.disabled = true;
     button.textContent = '処理中...';
     setStatus(statusEl, '注文を送信しています...', 'pending');
@@ -50,7 +53,8 @@
           'error'
         );
         button.disabled = false;
-        button.textContent = '注文する';
+        button.textContent = originalButtonText;
+        unlockConfirmationUi(lockTargets);
         return;
       }
 
@@ -59,7 +63,8 @@
       window.location.href = 'orderConfirmed.html';
     } catch {
       button.disabled = false;
-      button.textContent = '注文する';
+      button.textContent = originalButtonText;
+      unlockConfirmationUi(lockTargets);
       setStatus(
         statusEl,
         '注文の送信に失敗しました。しばらくしてからもう一度お試しください。',
@@ -144,6 +149,43 @@ function setStatus(statusEl, message, tone) {
   } else if (tone === 'pending') {
     statusEl.classList.add('is-pending');
   }
+}
+
+function lockConfirmationUi(targets) {
+  targets.forEach((element) => {
+    if (element instanceof HTMLAnchorElement) {
+      element.dataset.originalHref = element.getAttribute('href') || '';
+      element.removeAttribute('href');
+      element.setAttribute('aria-disabled', 'true');
+      element.tabIndex = -1;
+      element.classList.add('is-disabled');
+      return;
+    }
+
+    if (element instanceof HTMLButtonElement) {
+      element.disabled = true;
+    }
+  });
+}
+
+function unlockConfirmationUi(targets) {
+  targets.forEach((element) => {
+    if (element instanceof HTMLAnchorElement) {
+      const originalHref = element.dataset.originalHref;
+      if (originalHref) {
+        element.setAttribute('href', originalHref);
+      }
+      delete element.dataset.originalHref;
+      element.removeAttribute('aria-disabled');
+      element.removeAttribute('tabindex');
+      element.classList.remove('is-disabled');
+      return;
+    }
+
+    if (element instanceof HTMLButtonElement) {
+      element.disabled = false;
+    }
+  });
 }
 
 async function safeJson(response) {
