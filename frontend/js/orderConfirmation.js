@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   button.addEventListener('click', async () => {
     button.disabled = true;
-    button.textContent = '送信中...';
+    button.textContent = '処理中...';
     setStatus(statusEl, '注文を送信しています...', 'pending');
 
     try {
@@ -42,26 +42,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         setStatus(
           statusEl,
-          data?.message || '注文を送信できませんでした。しばらくしてからもう一度お試しください。',
+          data?.message || '注文の送信に失敗しました。しばらくしてからもう一度お試しください。',
           'error'
         );
+        button.disabled = false;
+        button.textContent = '注文する';
         return;
       }
 
       window.sessionStorage.removeItem('pendingOrderQuantity');
-      setStatus(
-        statusEl,
-        data?.message ? `${data.message} Order ID: ${data.orderId}` : `注文を受け付けました。Order ID: ${data.orderId}`,
-        'success'
-      );
-      button.disabled = true;
-      button.textContent = '送信済み';
+      window.sessionStorage.setItem('orderConfirmed', '1');
+      window.location.href = 'orderConfirmed.html';
     } catch {
       button.disabled = false;
-      button.textContent = '注文';
+      button.textContent = '注文する';
       setStatus(
         statusEl,
-        '注文を送信できませんでした。しばらくしてからもう一度お試しください。',
+        '注文の送信に失敗しました。しばらくしてからもう一度お試しください。',
         'error'
       );
     }

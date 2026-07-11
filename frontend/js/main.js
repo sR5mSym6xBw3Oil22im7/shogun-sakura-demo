@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.sessionStorage.setItem('pendingOrderQuantity', String(validation.payload.quantity));
-    window.location.href = 'OrderConfirmation.html';
+    window.location.href = 'orderConfirmation.html';
   });
 });
 
