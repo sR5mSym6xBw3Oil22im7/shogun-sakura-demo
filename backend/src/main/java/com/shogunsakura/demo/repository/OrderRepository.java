@@ -11,6 +11,11 @@ import org.springframework.stereotype.Repository;
 public class OrderRepository {
 
   private static final String INSERT_SQL = """
+      WITH sequence_reset AS (
+        SELECT CASE
+          WHEN NOT EXISTS (SELECT 1 FROM orders) THEN setval(pg_get_serial_sequence('orders', 'id'), 1, false)
+        END
+      )
       INSERT INTO orders (
         product_code,
         product_name,
@@ -23,7 +28,9 @@ public class OrderRepository {
         total_amount,
         note,
         demo_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)
+      )
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE
+      FROM sequence_reset
       RETURNING id, created_at
       """;
 

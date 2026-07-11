@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class OrderRepositoryTest {
@@ -54,8 +55,9 @@ class OrderRepositoryTest {
     assertThat(receipt.id()).isEqualTo(101L);
     assertThat(receipt.createdAt()).isEqualTo(createdAt);
 
+    ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
     verify(jdbcTemplate).queryForObject(
-        anyString(),
+        sqlCaptor.capture(),
         any(RowMapper.class),
         eq("SAKURA_SHOGUN_SET"),
         eq("SHOGUN SAKURA Demo Set"),
@@ -67,5 +69,10 @@ class OrderRepositoryTest {
         eq(4800),
         eq(9600),
         eq("Demo order"));
+
+    assertThat(sqlCaptor.getValue())
+        .contains("WITH sequence_reset AS")
+        .contains("NOT EXISTS (SELECT 1 FROM orders)")
+        .contains("setval(pg_get_serial_sequence('orders', 'id'), 1, false)");
   }
 }
