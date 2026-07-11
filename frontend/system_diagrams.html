@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SHOGUN SAKURA デモサイトのシステム構成図とデータフロー図をまとめたページです。">
+  <title>システム構成図・データフロー図 | SHOGUN SAKURA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="diagram-page">
+  <header class="topbar">
+    <div class="brand">SHOGUN SAKURA</div>
+    <div class="header-right">
+      <nav class="global-nav" aria-label="ページ移動">
+        <a href="#system-architecture">システム構成図</a>
+        <a href="#data-flow">データフロー図</a>
+        <a href="index.html">トップへ戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero diagram-hero">
+      <div class="copy">
+        <p class="sub">System Diagrams</p>
+        <h1>システム構成図とデータフロー図。</h1>
+        <p>
+          フロントエンド、Spring Boot API、Render PostgreSQL の関係をソースコードに沿って図式化しました。
+          画面遷移、API 呼び出し、DB 保存までを同じページで確認できます。
+        </p>
+        <a class="btn" href="index.html">トップに戻る</a>
+      </div>
+    </section>
+
+    <section class="diagram-section" id="system-architecture">
+      <div class="diagram-heading">
+        <p class="sub">System Architecture</p>
+        <h2>システム構成図</h2>
+        <p>
+          GitHub Pages 上の静的フロントエンドが API を呼び出し、Render 上の Spring Boot Web Service が
+          PostgreSQL に注文データを保存・取得する構成です。
+        </p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="flow-panel">
+          <p class="sub">System Composition Flow</p>
+          <h3>構成要素のつながり</h3>
+          <div class="flow-lane">
+            <div class="flow-step" data-step="1">
+              <span class="diagram-tag">Browser</span>
+              <h3>利用者</h3>
+              <p>注文入力、確認、注文履歴の閲覧を行う起点です。</p>
+            </div>
+            <div class="flow-step" data-step="2">
+              <span class="diagram-tag">GitHub Pages</span>
+              <h3>フロントエンド</h3>
+              <p>
+                <code>index.html</code>、<code>orderConfirmation.html</code>、<code>orderhistory.html</code>
+                と JavaScript を配信します。
+              </p>
+              <ul>
+                <li><code>main.js</code> が入力検証と画面遷移を担当</li>
+                <li><code>orderConfirmation.js</code> が送信用の架空データを生成</li>
+                <li><code>orderhistory.js</code> が注文履歴を描画</li>
+              </ul>
+            </div>
+            <div class="flow-step" data-step="3">
+              <span class="diagram-tag">Render Web Service</span>
+              <h3>Spring Boot API</h3>
+              <p>注文受付、履歴取得、ヘルスチェックを提供するバックエンドです。</p>
+              <ul>
+                <li><code>GET /api/health</code></li>
+                <li><code>POST /api/orders</code></li>
+                <li><code>GET /api/orders</code></li>
+              </ul>
+            </div>
+            <div class="flow-step flow-step--database" data-step="4">
+              <span class="diagram-tag">Render PostgreSQL</span>
+              <h3>orders テーブル</h3>
+              <p>
+                <code>schema.sql</code> で定義された保存先です。
+                商品コード、商品名、氏名、メール、郵便番号、住所、数量、合計金額、備考、登録日時を保持します。
+              </p>
+              <ul>
+                <li><code>OrderRepository</code> が INSERT を担当</li>
+                <li><code>OrderHistoryRepository</code> が SELECT を担当</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <p class="diagram-note">
+          Render のヘルスチェックは <code>/api/health</code> に向いており、CORS 設定は
+          <code>CorsConfig</code> で GitHub Pages とローカル開発環境を許可しています。
+        </p>
+      </div>
+    </section>
+
+    <section class="diagram-section" id="data-flow">
+      <div class="diagram-heading">
+        <p class="sub">Data Flow</p>
+        <h2>データフロー図</h2>
+        <p>
+          注文の入力から保存、注文履歴の取得までを、実際の JavaScript と Spring Boot の処理単位で追えるように整理しています。
+        </p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="flow-panel">
+          <p class="sub">Order Submission Flow</p>
+          <h3>注文送信の流れ</h3>
+          <div class="flow-lane">
+            <div class="flow-step" data-step="1">
+              <span class="diagram-tag">Frontend</span>
+              <h3>注文入力</h3>
+              <p>
+                <code>index.html</code> のフォームに氏名、メール、郵便番号、住所、数量、備考を入力します。
+              </p>
+            </div>
+            <div class="flow-step" data-step="2">
+              <span class="diagram-tag">main.js</span>
+              <h3>入力検証</h3>
+              <p>
+                <code>main.js</code> が入力値を検証し、数量を <code>sessionStorage</code> に保存して確認画面へ遷移します。
+              </p>
+            </div>
+            <div class="flow-step" data-step="3">
+              <span class="diagram-tag">orderConfirmation.js</span>
+              <h3>確認データ生成</h3>
+              <p>
+                <code>orderConfirmation.js</code> が架空データを生成し、表示用の注文内容を描画します。
+              </p>
+            </div>
+            <div class="flow-step" data-step="4">
+              <span class="diagram-tag">HTTP POST</span>
+              <h3>注文送信</h3>
+              <p>
+                <code>POST /api/orders</code> に JSON を送信し、<code>CreateOrderRequest</code> として受け取ります。
+              </p>
+            </div>
+            <div class="flow-step" data-step="5">
+              <span class="diagram-tag">Backend</span>
+              <h3>保存処理</h3>
+              <p>
+                <code>OrderController</code> から <code>OrderService</code>、<code>OrderRepository</code> を経由して
+                <code>orders</code> テーブルに保存します。
+              </p>
+            </div>
+            <div class="flow-step flow-step--database" data-step="6">
+              <span class="diagram-tag">Response</span>
+              <h3>完了表示</h3>
+              <p>
+                保存結果を返したあと、<code>orderConfirmed.html</code> に遷移して完了画面を表示します。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-panel">
+          <p class="sub">History Retrieval Flow</p>
+          <h3>注文履歴の流れ</h3>
+          <div class="flow-lane">
+            <div class="flow-step" data-step="1">
+              <span class="diagram-tag">orderhistory.html</span>
+              <h3>履歴画面を開く</h3>
+              <p>
+                注文履歴一覧表示ページを開き、一覧テーブルを描画する準備を行います。
+              </p>
+            </div>
+            <div class="flow-step" data-step="2">
+              <span class="diagram-tag">orderhistory.js</span>
+              <h3>履歴取得</h3>
+              <p>
+                <code>GET /api/orders</code> を呼び出し、注文一覧の JSON を取得します。
+              </p>
+            </div>
+            <div class="flow-step" data-step="3">
+              <span class="diagram-tag">Repository</span>
+              <h3>DB 参照</h3>
+              <p>
+                <code>OrderHistoryRepository</code> が <code>orders</code> テーブルを検索し、履歴レスポンスへ変換します。
+              </p>
+            </div>
+            <div class="flow-step flow-step--database" data-step="4">
+              <span class="diagram-tag">Browser</span>
+              <h3>一覧描画</h3>
+              <p>
+                返却されたデータを表形式で描画し、注文ID、氏名、数量、合計金額、登録日時を表示します。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-summary">
+          <div>
+            <strong>入力データ</strong>
+            <p>フォーム値、数量、備考、履歴一覧の表示条件</p>
+          </div>
+          <div>
+            <strong>中継データ</strong>
+            <p>JSON リクエスト、API 応答、<code>sessionStorage</code></p>
+          </div>
+          <div>
+            <strong>永続化データ</strong>
+            <p><code>orders</code> テーブルに保存された注文レコード</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>SHOGUN SAKURA</footer>
+</body>
+</html>
