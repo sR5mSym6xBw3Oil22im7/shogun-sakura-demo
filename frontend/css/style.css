@@ -434,6 +434,17 @@ dd {
   color: var(--gold);
 }
 
+.confirmation-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.confirmation-actions .btn {
+  margin-top: 0;
+}
+
 .history-page code {
   color: #fff;
   font-family: inherit;

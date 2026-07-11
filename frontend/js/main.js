@@ -26,53 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    setLoadingState(submitButton, true);
-    setStatus(statusEl, 'Sending order data...', 'pending');
-
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(validation.payload),
-      });
-
-      const data = await safeJson(response);
-
-      if (!response.ok) {
-        if (data && data.fieldErrors) {
-          applyFieldErrors(form, fieldErrorMap, data.fieldErrors);
-        }
-
-        setStatus(
-          statusEl,
-          data?.message || 'We could not accept the order right now. Please try again later.',
-          'error'
-        );
-        return;
-      }
-
-      setStatus(
-        statusEl,
-        data?.message ? `${data.message} Order ID: ${data.orderId}` : `Order received. Order ID: ${data.orderId}`,
-        'success'
-      );
-      form.reset();
-
-      const quantityField = form.elements.quantity;
-      if (quantityField) {
-        quantityField.value = '1';
-      }
-    } catch {
-      setStatus(
-        statusEl,
-        'We could not accept the order right now. Please try again later.',
-        'error'
-      );
-    } finally {
-      setLoadingState(submitButton, false);
-    }
+    window.sessionStorage.setItem('pendingOrderQuantity', String(validation.payload.quantity));
+    window.location.href = 'OrderConfirmation.html';
   });
 });
 

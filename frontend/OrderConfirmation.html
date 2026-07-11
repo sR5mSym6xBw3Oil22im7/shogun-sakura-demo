@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="注文内容を確認して、架空データで注文を送信するデモページです。">
+  <title>注文確認 | SHOGUN SAKURA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="order-confirmation-page">
+  <header class="topbar">
+    <div class="brand">SHOGUN SAKURA</div>
+    <div class="header-right">
+      <nav class="global-nav" aria-label="ページ移動">
+        <a href="index.html">注文入力</a>
+      </nav>
+      <div class="demo-badge">Order Confirmation Demo</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero history-hero">
+      <div class="copy">
+        <p class="sub">Order Confirmation / Render</p>
+        <h1>注文確認</h1>
+        <p>
+          この画面では、氏名・住所・郵便番号・メールアドレス・備考を架空データで表示します。
+          「注文」を押すと、その架空データだけを Render に送信します。
+        </p>
+      </div>
+      <div class="history-summary-card">
+        <p class="sub">Safety Note</p>
+        <h2>個人情報は保持しません</h2>
+        <p>
+          注文入力画面からこの画面へ移動したとき、氏名・住所・郵便番号・メールアドレス・備考は破棄されます。
+          送信時に使うのは、この画面で生成した架空データだけです。
+        </p>
+      </div>
+    </section>
+
+    <section class="purchase history-section" id="confirmation">
+      <div class="purchase-card">
+        <p class="sub">Fake Data Preview</p>
+        <h2>表示内容</h2>
+
+        <dl class="confirmation-list">
+          <div>
+            <dt>氏名</dt>
+            <dd data-confirmation-field="name"></dd>
+          </div>
+          <div>
+            <dt>住所</dt>
+            <dd data-confirmation-field="address"></dd>
+          </div>
+          <div>
+            <dt>郵便番号</dt>
+            <dd data-confirmation-field="postalCode"></dd>
+          </div>
+          <div>
+            <dt>メールアドレス</dt>
+            <dd data-confirmation-field="email"></dd>
+          </div>
+          <div>
+            <dt>備考</dt>
+            <dd data-confirmation-field="note"></dd>
+          </div>
+          <div>
+            <dt>数量</dt>
+            <dd data-confirmation-field="quantity"></dd>
+          </div>
+        </dl>
+
+        <div class="confirmation-actions">
+          <a class="btn" href="index.html#purchase">戻る</a>
+          <button class="btn" type="button" data-confirm-order-button>注文</button>
+        </div>
+        <div class="form-status" data-confirmation-status aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>SHOGUN SAKURA / Order Confirmation Demo</footer>
+
+  <script>
+    window.API_BASE_URL = (
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1' ||
+      location.protocol === 'file:'
+    )
+      ? 'http://localhost:8080'
+      : 'https://shogun-sakura-demo.onrender.com';
+  </script>
+  <script src="js/orderConfirmation.js"></script>
+</body>
+</html>
