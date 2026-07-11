@@ -404,9 +404,27 @@ dd {
   color: rgba(201, 189, 168, 0.84);
 }
 
+.field-note--warning {
+  color: var(--gold);
+  min-height: 1.6em;
+  font-weight: 700;
+}
+
 .field-error {
   color: #ffb0b6;
   min-height: 1.6em;
+}
+
+.field input.prefilled-value,
+.field textarea.prefilled-value {
+  color: rgba(201, 189, 168, 0.84);
+  font-style: normal;
+  font-weight: 400;
+}
+
+.field input.prefilled-value:focus,
+.field textarea.prefilled-value:focus {
+  color: rgba(201, 189, 168, 0.84);
 }
 
 .form-hint {

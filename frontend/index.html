@@ -110,38 +110,38 @@
           <div class="form-grid">
             <div class="field">
               <label for="name">お名前</label>
-              <input id="name" name="name" type="text" maxlength="50" autocomplete="name" required>
+              <input id="name" class="prefilled-value" name="name" type="text" maxlength="50" autocomplete="name" value="山田　太郎" data-clear-on-focus="true" required>
               <p class="field-error" data-error-for="name" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="email">メールアドレス</label>
-              <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
+              <input id="email" class="prefilled-value" name="email" type="email" maxlength="100" autocomplete="email" value="yamanda@demo" data-email-prefix="yamanda@demo" data-clear-on-focus="true" required>
               <p class="field-error" data-error-for="email" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="postalCode">郵便番号</label>
-              <input id="postalCode" name="postalCode" type="text" inputmode="numeric" maxlength="8" autocomplete="postal-code" placeholder="100-0001">
-              <p class="field-note">数字とハイフンのみ、最大8文字で入力してください。任意項目です。</p>
+              <input id="postalCode" class="prefilled-value" name="postalCode" type="text" inputmode="numeric" maxlength="8" autocomplete="postal-code" value="100-0001" data-clear-on-focus="true">
               <p class="field-error" data-error-for="postalCode" aria-live="polite"></p>
             </div>
 
             <div class="field field-full">
               <label for="address">住所</label>
-              <textarea id="address" name="address" rows="3" maxlength="200" autocomplete="street-address" required></textarea>
+              <textarea id="address" class="prefilled-value" name="address" rows="3" maxlength="200" autocomplete="street-address" data-clear-on-focus="true" required>東京都港区芝公園4-2-8</textarea>
               <p class="field-error" data-error-for="address" aria-live="polite"></p>
             </div>
 
             <div class="field">
               <label for="quantity">数量</label>
-              <input id="quantity" name="quantity" type="number" min="1" max="9" step="1" value="1" required>
+              <input id="quantity" name="quantity" type="number" min="1" max="9" step="1" value="1" inputmode="none" data-quantity-input aria-describedby="quantity-warning" required>
+              <p id="quantity-warning" class="field-note field-note--warning" data-quantity-warning aria-live="polite"></p>
               <p class="field-error" data-error-for="quantity" aria-live="polite"></p>
             </div>
 
             <div class="field field-full">
               <label for="note">備考</label>
-              <textarea id="note" name="note" rows="3" maxlength="200" placeholder="ご要望があればご記入ください"></textarea>
+              <textarea id="note" class="prefilled-value" name="note" rows="3" maxlength="200" data-clear-on-focus="true">ご要望があればご記入ください</textarea>
               <p class="field-error" data-error-for="note" aria-live="polite"></p>
             </div>
           </div>

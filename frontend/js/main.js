@@ -4,12 +4,26 @@
     return;
   }
 
+  const emailInput = form.querySelector('#email');
+  if (emailInput) {
+    const prefix = emailInput.dataset.emailPrefix || 'yamanda@demo';
+    emailInput.value = `${prefix}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}.com`;
+  }
+
+  setupClearOnFocusFields(form);
+
   const submitButton = form.querySelector('[data-submit-button]');
   const statusEl = form.querySelector('[data-form-status]');
   const fieldErrorMap = new Map(
     Array.from(form.querySelectorAll('[data-error-for]')).map((element) => [element.dataset.errorFor, element])
   );
+  const quantityInput = form.querySelector('[data-quantity-input]');
+  const quantityWarningEl = form.querySelector('[data-quantity-warning]');
   const apiBaseUrl = resolveApiBaseUrl();
+
+  if (quantityInput) {
+    setupQuantityRestrictions(quantityInput, quantityWarningEl);
+  }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -178,4 +192,139 @@ async function safeJson(response) {
   } catch {
     return null;
   }
+}
+
+function setupClearOnFocusFields(form) {
+  const fields = form.querySelectorAll('[data-clear-on-focus="true"]');
+
+  fields.forEach((field) => {
+    const originalValue = field.value;
+
+    field.dataset.originalValue = originalValue;
+
+    field.addEventListener('focus', () => {
+      if (field.value !== originalValue) {
+        return;
+      }
+
+      field.value = '';
+      field.classList.remove('prefilled-value');
+    });
+
+    field.addEventListener('blur', () => {
+      if (field.value.trim() !== '') {
+        return;
+      }
+
+      field.value = field.dataset.originalValue || '';
+      field.classList.add('prefilled-value');
+    });
+  });
+}
+
+function setupQuantityRestrictions(quantityInput, warningEl) {
+  let lastValidValue = quantityInput.value || '1';
+  let allowPointerChange = false;
+  let allowKeyboardChange = false;
+
+  const warningMessage = '数量は直接入力できません。矢印ボタンか上下の矢印キーで変更してください。';
+
+  const showWarning = () => {
+    if (warningEl) {
+      warningEl.textContent = warningMessage;
+    }
+  };
+
+  const clearWarning = () => {
+    if (warningEl) {
+      warningEl.textContent = '';
+    }
+  };
+
+  const allowEdit = () => {
+    if (allowPointerChange || allowKeyboardChange) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const resetFlags = () => {
+    allowPointerChange = false;
+    allowKeyboardChange = false;
+  };
+
+  quantityInput.addEventListener('pointerdown', () => {
+    allowPointerChange = true;
+  });
+
+  quantityInput.addEventListener('pointerup', () => {
+    allowPointerChange = false;
+  });
+
+  quantityInput.addEventListener('pointercancel', () => {
+    allowPointerChange = false;
+  });
+
+  quantityInput.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      allowKeyboardChange = true;
+      return;
+    }
+
+    if (['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'Home', 'End', 'Enter'].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    showWarning();
+  });
+
+  quantityInput.addEventListener('beforeinput', (event) => {
+    if (allowEdit()) {
+      return;
+    }
+
+    event.preventDefault();
+    showWarning();
+  });
+
+  quantityInput.addEventListener('paste', (event) => {
+    event.preventDefault();
+    showWarning();
+  });
+
+  quantityInput.addEventListener('drop', (event) => {
+    event.preventDefault();
+    showWarning();
+  });
+
+  quantityInput.addEventListener(
+    'wheel',
+    (event) => {
+      event.preventDefault();
+      showWarning();
+    },
+    { passive: false }
+  );
+
+  quantityInput.addEventListener('input', () => {
+    if (allowEdit()) {
+      lastValidValue = quantityInput.value;
+      clearWarning();
+      if (allowKeyboardChange) {
+        allowKeyboardChange = false;
+      }
+      return;
+    }
+
+    quantityInput.value = lastValidValue;
+    showWarning();
+  });
+
+  quantityInput.addEventListener('blur', () => {
+    quantityInput.value = lastValidValue;
+    clearWarning();
+    resetFlags();
+  });
 }
