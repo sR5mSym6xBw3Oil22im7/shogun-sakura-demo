@@ -160,7 +160,10 @@ p {
   border: 1px solid var(--gold);
   background: linear-gradient(135deg, #d1a85a, #a9782d);
   color: #14100d;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 900;
+  letter-spacing: 0.08em;
   text-decoration: none;
   cursor: pointer;
   margin-top: 24px;
