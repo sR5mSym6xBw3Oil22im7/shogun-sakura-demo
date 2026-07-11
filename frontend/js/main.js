@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
   const form = document.querySelector('[data-order-form]');
   if (!form) {
     return;

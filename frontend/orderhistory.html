@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="注文履歴を一覧表示するページです。">
+  <meta name="description" content="注文履歴一覧表示">
   <title>注文履歴一覧表示 | SHOGUN SAKURA</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -11,51 +11,30 @@
   <header class="topbar">
     <div class="brand">SHOGUN SAKURA</div>
     <div class="header-right">
-      <nav class="global-nav" aria-label="注文画面へのリンク">
-        <a href="index.html">注文画面</a>
+      <nav class="global-nav" aria-label="ページ移動">
+        <a href="./index.html">注文入力</a>
       </nav>
-      <div class="demo-badge">Order History Demo</div>
+      <div class="demo-badge">注文履歴デモ</div>
     </div>
   </header>
 
   <main>
-    <section class="hero history-hero">
+    <section class="hero history-hero history-hero--compact">
       <div class="copy">
-        <p class="sub">Order History / Render PostgreSQL</p>
+        <p class="sub">注文履歴</p>
         <h1>注文履歴一覧表示</h1>
         <p>
-          Render の Web Service が受領した注文データを、Render PostgreSQL の
-          <code>orders</code> テーブルから一覧表示します。
+          Render の Web Service が受領した注文データを、 PostgreSQL の <code>orders</code> テーブルから一覧表示します。
         </p>
-        <a class="btn" href="index.html">注文画面へ戻る</a>
-      </div>
-      <div class="history-summary">
-        <div class="history-summary-card">
-          <p class="sub">Data Source</p>
-          <h2>注文履歴の確認</h2>
-          <p>
-            注文番号の昇順で表示します。表示できない場合は、Web Service と
-            PostgreSQL の接続状態を確認してください。
-          </p>
-          <dl class="history-summary-list">
-            <div>
-              <dt>取得先</dt>
-              <dd>/api/orders</dd>
-            </div>
-            <div>
-              <dt>保存先</dt>
-              <dd>orders table</dd>
-            </div>
-          </dl>
-        </div>
+        <a class="btn" href="./index.html">注文入力画面へ戻る</a>
       </div>
     </section>
 
     <section class="purchase history-section" id="history">
       <div class="purchase-card">
-        <p class="sub">Order List</p>
+        <p class="sub">注文一覧</p>
         <h2>注文履歴一覧</h2>
-        <p>注文番号、氏名、数量、合計金額、登録日時を一覧で確認できます。</p>
+        <p>注文ID、氏名、数量、合計金額、登録日時を一覧で確認できます。</p>
 
         <div class="history-status" data-history-status aria-live="polite"></div>
         <div class="history-table-shell">
@@ -81,7 +60,7 @@
     </section>
   </main>
 
-  <footer>SHOGUN SAKURA / Order History Demo</footer>
+  <footer>SHOGUN SAKURA / 注文履歴デモ</footer>
 
   <script>
     window.API_BASE_URL = (

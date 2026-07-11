@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --bg: #11100e;
   --panel: #1c1915;
   --panel2: #262018;
@@ -462,6 +462,13 @@ dd {
   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.34);
 }
 
+.history-hero--compact {
+  grid-template-columns: 1fr;
+}
+
+.history-hero--compact .copy {
+  max-width: 920px;
+}
 .history-summary-list {
   display: grid;
   gap: 14px;

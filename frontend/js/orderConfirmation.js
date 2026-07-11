@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
   if (!window.sessionStorage.getItem('pendingOrderQuantity')) {
     window.location.replace('index.html');
     return;

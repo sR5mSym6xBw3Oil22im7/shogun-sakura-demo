@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
   const historyBody = document.querySelector('[data-history-body]');
   const statusEl = document.querySelector('[data-history-status]');
   if (!historyBody || !statusEl) {
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
-  setStatus(statusEl, '注文履歴を取得しています...', 'pending');
+  setStatus(statusEl, '注文履歴を取得しています…', 'pending');
 
   try {
     const response = await fetch(`${apiBaseUrl}/api/orders`, {
@@ -22,8 +22,9 @@ async function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
     const data = await safeJson(response);
 
     if (!response.ok) {
-      setStatus(statusEl, data?.message || '注文履歴を取得できませんでした。', 'error');
-      renderEmptyRow(historyBody, '注文履歴を取得できませんでした。');
+      const message = data?.message || '注文履歴を取得できませんでした。';
+      setStatus(statusEl, message, 'error');
+      renderEmptyRow(historyBody, message);
       return;
     }
 
@@ -31,8 +32,9 @@ async function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
     renderHistoryRows(historyBody, items);
     setStatus(statusEl, items.length > 0 ? `${items.length} 件の注文履歴を表示しています。` : '注文履歴はまだありません。', 'success');
   } catch {
-    setStatus(statusEl, '注文履歴を取得できませんでした。', 'error');
-    renderEmptyRow(historyBody, '注文履歴を取得できませんでした。');
+    const message = '注文履歴を取得できませんでした。';
+    setStatus(statusEl, message, 'error');
+    renderEmptyRow(historyBody, message);
   }
 }
 
