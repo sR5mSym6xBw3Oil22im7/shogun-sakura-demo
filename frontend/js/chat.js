@@ -6,19 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const toggle = root.querySelector('[data-chatbot-toggle]');
   const panel = root.querySelector('[data-chatbot-panel]');
-  const closeButton = root.querySelector('[data-chatbot-close]');
   const form = root.querySelector('[data-chatbot-form]');
   const input = root.querySelector('[data-chatbot-input]');
   const sendButton = root.querySelector('[data-chatbot-send]');
-  const messages = root.querySelector('[data-chatbot-messages]');
   const status = root.querySelector('[data-chatbot-status]');
   const count = root.querySelector('[data-chatbot-count]');
   const apiBaseUrl = resolveChatApiBaseUrl();
   let isSending = false;
+  let isOpen = false;
 
-  const setOpen = (isOpen) => {
+  const setOpen = (nextOpen) => {
+    isOpen = nextOpen;
     panel.hidden = !isOpen;
+    root.classList.toggle('is-open', isOpen);
     toggle.setAttribute('aria-expanded', String(isOpen));
+    toggle.setAttribute('aria-label', isOpen ? 'AI案内を閉じる' : 'AI案内を開く');
     if (isOpen) {
       input.focus();
     } else {
@@ -27,21 +29,37 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   toggle.addEventListener('click', () => {
-    setOpen(panel.hidden);
+    setOpen(!isOpen);
   });
 
-  closeButton.addEventListener('click', () => {
-    setOpen(false);
+  document.addEventListener('pointerdown', (event) => {
+    if (isOpen && !root.contains(event.target)) {
+      setOpen(false);
+    }
+  });
+
+  document.addEventListener('focusin', (event) => {
+    if (isOpen && !root.contains(event.target)) {
+      setOpen(false);
+    }
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !panel.hidden) {
+    if (event.key === 'Escape' && isOpen) {
       setOpen(false);
     }
   });
 
   input.addEventListener('input', () => {
     updateCount(input, count);
+  });
+
+  input.addEventListener('blur', () => {
+    window.setTimeout(() => {
+      if (isOpen && document.activeElement !== sendButton) {
+        setOpen(false);
+      }
+    }, 0);
   });
 
   input.addEventListener('keydown', (event) => {
@@ -63,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     isSending = true;
     setLoading(sendButton, true);
     setStatus(status, '送信中...', '');
-    appendMessage(messages, message, 'user');
     input.value = '';
     updateCount(input, count);
 
@@ -77,15 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await safeJson(response);
       if (!response.ok) {
-        appendMessage(messages, data?.message || '回答できませんでした。しばらくしてからもう一度お試しください。', 'bot');
-        setStatus(status, '', '');
+        setStatus(status, data?.message || '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
         return;
       }
-      appendMessage(messages, data?.answer || 'このサイト内に記載がないため、お答えできません。', 'bot');
-      setStatus(status, '', '');
+      setStatus(status, data?.answer || 'このサイト内に記載がないため、お答えできません。', '');
     } catch {
-      appendMessage(messages, '回答できませんでした。しばらくしてからもう一度お試しください。', 'bot');
-      setStatus(status, '', '');
+      setStatus(status, '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
     } finally {
       isSending = false;
       setLoading(sendButton, false);
@@ -101,14 +115,6 @@ function resolveChatApiBaseUrl() {
   return raw.replace(/\/+$/, '');
 }
 
-function appendMessage(messages, text, sender) {
-  const element = document.createElement('p');
-  element.className = `chatbot-message chatbot-message--${sender}`;
-  element.textContent = text;
-  messages.appendChild(element);
-  messages.scrollTop = messages.scrollHeight;
-}
-
 function updateCount(input, count) {
   if (count) {
     count.textContent = `${input.value.length} / ${input.maxLength}`;
@@ -121,6 +127,10 @@ function setLoading(button, isLoading) {
 }
 
 function setStatus(status, message, tone) {
+  if (!status) {
+    return;
+  }
+
   status.textContent = message;
   status.classList.toggle('is-error', tone === 'error');
 }
