@@ -13,17 +13,16 @@ public class DataSourceConfig {
 
   @Bean
   public DataSource dataSource(Environment environment) {
-    String user = required(environment, "DB_USER");
-    String host = required(environment, "DB_HOST");
-    String password = required(environment, "DB_PASSWORD");
-    String port = required(environment, "DB_PORT");
-    String database = required(environment, "DB_NAME");
+    String jdbcUrl = required(environment, "SPRING_DATASOURCE_URL");
+    String user = required(environment, "SPRING_DATASOURCE_USERNAME");
+    String password = required(environment, "SPRING_DATASOURCE_PASSWORD");
 
     HikariConfig config = new HikariConfig();
     config.setDriverClassName("org.postgresql.Driver");
-    config.setJdbcUrl("jdbc:postgresql://" + host + ":" + port + "/" + database + "?sslmode=require");
+    config.setJdbcUrl(jdbcUrl);
     config.setUsername(user);
     config.setPassword(password);
+    config.setInitializationFailTimeout(-1);
     return new HikariDataSource(config);
   }
 

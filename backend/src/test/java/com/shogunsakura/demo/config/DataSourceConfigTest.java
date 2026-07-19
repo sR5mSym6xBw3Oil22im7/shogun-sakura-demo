@@ -12,17 +12,15 @@ class DataSourceConfigTest {
   @Test
   void dataSourceUsesRenderEnvironmentVariables() {
     MockEnvironment environment = new MockEnvironment()
-        .withProperty("DB_USER", "shogun_sakura_user")
-        .withProperty("DB_HOST", "dpg-df9e4ic8aq0b73uvlouq-a")
-        .withProperty("DB_PASSWORD", "secret")
-        .withProperty("DB_PORT", "5432")
-        .withProperty("DB_NAME", "shogun_sakura");
+        .withProperty("SPRING_DATASOURCE_URL", "jdbc:postgresql://dpg-df9e4ic8aq0b73uvlouq-a:5432/shogun_sakura")
+        .withProperty("SPRING_DATASOURCE_USERNAME", "shogun_sakura_user")
+        .withProperty("SPRING_DATASOURCE_PASSWORD", "secret");
 
     DataSourceConfig config = new DataSourceConfig();
     HikariDataSource dataSource = (HikariDataSource) config.dataSource(environment);
 
     assertThat(dataSource.getJdbcUrl())
-        .isEqualTo("jdbc:postgresql://dpg-df9e4ic8aq0b73uvlouq-a:5432/shogun_sakura?sslmode=require");
+        .isEqualTo("jdbc:postgresql://dpg-df9e4ic8aq0b73uvlouq-a:5432/shogun_sakura");
     assertThat(dataSource.getUsername()).isEqualTo("shogun_sakura_user");
     assertThat(dataSource.getPassword()).isEqualTo("secret");
     dataSource.close();
@@ -31,10 +29,8 @@ class DataSourceConfigTest {
   @Test
   void dataSourceFailsWhenEnvironmentVariableIsMissing() {
     MockEnvironment environment = new MockEnvironment()
-        .withProperty("DB_USER", "shogun_sakura_user")
-        .withProperty("DB_HOST", "dpg-df9e4ic8aq0b73uvlouq-a")
-        .withProperty("DB_PASSWORD", "secret")
-        .withProperty("DB_PORT", "5432");
+        .withProperty("SPRING_DATASOURCE_URL", "jdbc:postgresql://localhost:5432/shogun_sakura")
+        .withProperty("SPRING_DATASOURCE_USERNAME", "shogun_sakura_user");
 
     DataSourceConfig config = new DataSourceConfig();
 

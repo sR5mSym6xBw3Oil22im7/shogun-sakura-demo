@@ -18,13 +18,9 @@ public class RenderPostgresConnectionChecker implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    String user = required("DB_USER");
-    String host = required("DB_HOST");
-    String password = required("DB_PASSWORD");
-    String port = required("DB_PORT");
-    String database = required("DB_NAME");
-
-    String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + database + "?sslmode=require";
+    String jdbcUrl = required("SPRING_DATASOURCE_URL");
+    String user = required("SPRING_DATASOURCE_USERNAME");
+    String password = required("SPRING_DATASOURCE_PASSWORD");
 
     try (Connection connection = DriverManager.getConnection(jdbcUrl, user, password)) {
       connection.close();

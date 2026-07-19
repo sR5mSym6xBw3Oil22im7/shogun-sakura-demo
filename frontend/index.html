@@ -157,6 +157,44 @@
     </section>
   </main>
 
+  <section class="chatbot" data-chatbot>
+    <button
+      class="chatbot-toggle"
+      type="button"
+      data-chatbot-toggle
+      aria-expanded="false"
+      aria-controls="chatbot-panel">
+      AI案内
+    </button>
+    <div class="chatbot-panel" id="chatbot-panel" data-chatbot-panel hidden>
+      <div class="chatbot-header">
+        <div>
+          <p class="chatbot-kicker">SHOGUN SAKURA</p>
+          <h2>AI案内</h2>
+        </div>
+        <button class="chatbot-close" type="button" data-chatbot-close aria-label="AI案内を閉じる">×</button>
+      </div>
+      <div class="chatbot-messages" data-chatbot-messages aria-live="polite">
+        <p class="chatbot-message chatbot-message--bot">SHOGUN SAKURAのページ内容について質問できます。</p>
+      </div>
+      <form class="chatbot-form" data-chatbot-form>
+        <label class="chatbot-label" for="chatbot-message">質問</label>
+        <textarea
+          id="chatbot-message"
+          data-chatbot-input
+          maxlength="500"
+          rows="3"
+          placeholder="セット内容や価格について質問"
+          aria-describedby="chatbot-count"></textarea>
+        <div class="chatbot-actions">
+          <span id="chatbot-count" data-chatbot-count>0 / 500</span>
+          <button class="chatbot-send" type="submit" data-chatbot-send>送信</button>
+        </div>
+        <p class="chatbot-status" data-chatbot-status aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
   <footer>SHOGUN SAKURA</footer>
 
   <script>
@@ -169,5 +207,6 @@
       : 'https://shogun-sakura-demo.onrender.com';
   </script>
   <script src="js/main.js"></script>
+  <script src="js/chat.js"></script>
 </body>
 </html>
