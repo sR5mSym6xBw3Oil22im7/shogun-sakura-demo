@@ -13,6 +13,7 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 - HTML、CSS、JavaScript による静的な商品・注文フロー
 - 注文確認画面からバックエンド API へデモ注文を送信
 - 注文履歴画面で保存済み注文を API から取得
+- SHOGUN SAKURA サイト本文だけを根拠に回答するテキスト専用 AI チャット
 - Spring Boot REST API による入力バリデーション
 - PostgreSQL への注文レコード保存
 - GitHub Pages とローカル開発向けの CORS 設定
@@ -49,28 +50,32 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 
 ### 前提条件
 
+- Windows 11 Pro と PowerShell
 - Java 21
 - Maven
 - バックエンドから接続できる PostgreSQL
-- フロントエンド配信用の静的サーバー。例: VS Code Live Server、または `python3 -m http.server`
+- フロントエンド配信用の静的サーバー。例: VS Code Live Server、または JDK 21 付属の `jwebserver`
 
 ### バックエンドの起動
 
-PostgreSQL 接続情報を環境変数として設定します。
+PowerShell でリポジトリルートへ移動し、PostgreSQL 接続情報と MCP 内部設定を環境変数として設定します。
 
-```bash
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=shogun_sakura
-export DB_USER=shogun_sakura_user
-export DB_PASSWORD=your_password
-export ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+```powershell
+$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/shogun_sakura"
+$env:SPRING_DATASOURCE_USERNAME="shogun_sakura_user"
+$env:SPRING_DATASOURCE_PASSWORD="your_local_password"
+$env:MCP_INTERNAL_TOKEN="local-long-random-token"
+$env:SITE_SOURCE_BASE_URL="http://127.0.0.1:5500/frontend/"
+$env:ALLOWED_ORIGINS="http://localhost:5500,http://127.0.0.1:5500,null"
 ```
 
-API を起動します。
+`GEMINI_API_KEY` 環境変数は不要です。Gemini API キーの値は README やフロントエンドには記載しません。
 
-```bash
-cd backend
+テストと API 起動を実行します。
+
+```powershell
+cd .\backend
+mvn clean test
 mvn spring-boot:run
 ```
 
@@ -78,16 +83,15 @@ mvn spring-boot:run
 
 ### フロントエンドの起動
 
-`frontend/` ディレクトリを静的サーバーで配信します。
+別の PowerShell でリポジトリルートへ移動し、ルートを静的サーバーで配信します。
 
-```bash
-cd frontend
-python3 -m http.server 5500
+```powershell
+jwebserver -p 5500
 ```
 
-ブラウザで `http://localhost:5500/` を開きます。
+ブラウザで `http://127.0.0.1:5500/frontend/` を開きます。VS Code Live Server を使う場合も、同じ URL 形式で `frontend/` を開いてください。
 
-デフォルトでは、フロントエンドは Render 上のバックエンド API を呼び出します。ローカルのバックエンドに向けたい場合は、ページのスクリプト読み込み前に `window.API_BASE_URL` を定義するか、対応ページの `body` に `data-api-base-url` を設定してください。
+`frontend/index.html` を `file://` で直接開いた場合も、デフォルトでは Render 上のバックエンド API を呼び出します。ローカルのバックエンドに向けたい場合は、ローカルサーバー経由で `frontend/` を開くか、ページのスクリプト読み込み前に `window.API_BASE_URL` を定義するか、対応ページの `body` に `data-api-base-url` を設定してください。
 
 ```html
 <script>
@@ -161,6 +165,39 @@ python3 -m http.server 5500
   }
 ]
 ```
+
+### `POST /api/chat`
+
+SHOGUN SAKURA サイト本文に基づく AI チャット回答を返します。フロントエンドはこの API だけを呼び、Gemini API や内部用 `/mcp` エンドポイントを直接呼びません。
+
+```json
+{
+  "message": "セットの価格はいくらですか？"
+}
+```
+
+入力ルール:
+
+- `message`: 必須、trim 後に空でないこと、500 文字以内
+- チャット内容は DB に保存しません。
+
+成功時のレスポンス例:
+
+```json
+{
+  "answer": "桜の押し花と将軍の扇セットは、税込のデモ価格で4,800円です。"
+}
+```
+
+サイト本文に根拠がない場合は、次の固定文を返します。
+
+```text
+このサイト内に記載がないため、お答えできません。
+```
+
+### 内部 MCP
+
+`/mcp` はバックエンド内部の AI チャット処理専用です。`MCP_INTERNAL_TOKEN` と Origin 検証で保護し、フロントエンドから直接呼び出しません。
 
 ## デプロイ
 

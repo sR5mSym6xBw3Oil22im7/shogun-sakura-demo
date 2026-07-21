@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.shogunsakura.demo.exception.GeminiApiException;
 import com.shogunsakura.demo.exception.SiteContentUnavailableException;
 import com.shogunsakura.demo.mcp.SiteKnowledgeMcpClient;
+import com.shogunsakura.demo.service.GeminiGenerateContentClient.GeminiFunctionCall;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.core.io.ClassPathResource;
@@ -27,12 +28,12 @@ public class ChatService {
   public String answer(String rawMessage) {
     String message = rawMessage == null ? "" : rawMessage.trim();
     try {
-      geminiClient.requestFunctionCall(message, systemInstruction);
+      GeminiFunctionCall functionCall = geminiClient.requestFunctionCall(message, systemInstruction);
       JsonNode siteContent = mcpClient.callSiteContentTool();
       if (!hasUsableSiteContent(siteContent)) {
         return UNANSWERABLE_MESSAGE;
       }
-      String answer = geminiClient.requestFinalAnswer(message, systemInstruction, siteContent).trim();
+      String answer = geminiClient.requestFinalAnswer(message, systemInstruction, functionCall, siteContent).trim();
       if (answer.isBlank() || revealsRestrictedInformation(answer)) {
         return UNANSWERABLE_MESSAGE;
       }

@@ -3,116 +3,93 @@ package com.shogunsakura.demo.mcp;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shogunsakura.demo.exception.SiteContentUnavailableException;
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
+import io.modelcontextprotocol.spec.McpSchema;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SiteKnowledgeMcpClient {
 
-  private final HttpClient httpClient;
   private final ObjectMapper objectMapper;
   private final McpAuthentication authentication;
-  private final URI mcpUri;
-  private final AtomicLong ids = new AtomicLong(1);
+  private final Environment environment;
 
   public SiteKnowledgeMcpClient(ObjectMapper objectMapper, McpAuthentication authentication, Environment environment) {
-    this(HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(3))
-        .build(), objectMapper, authentication, resolveMcpUri(environment));
-  }
-
-  SiteKnowledgeMcpClient(
-      HttpClient httpClient,
-      ObjectMapper objectMapper,
-      McpAuthentication authentication,
-      URI mcpUri) {
-    this.httpClient = httpClient;
     this.objectMapper = objectMapper;
     this.authentication = authentication;
-    this.mcpUri = mcpUri;
+    this.environment = environment;
   }
 
   public JsonNode callSiteContentTool() {
-    request("initialize", Map.of(
-        "protocolVersion", "2025-06-18",
-        "clientInfo", Map.of("name", "shogun-sakura-chat", "version", "1.0.0"),
-        "capabilities", Map.of()
-    ));
+    String mcpBaseUrl = resolveMcpBaseUrl(environment);
+    HttpClientStreamableHttpTransport transport = HttpClientStreamableHttpTransport
+        .builder(mcpBaseUrl)
+        .endpoint("/mcp")
+        .openConnectionOnStartup(false)
+        .connectTimeout(Duration.ofSeconds(3))
+        .clientBuilder(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)))
+        .httpRequestCustomizer((builder, method, uri, body, context) -> builder
+            .header(McpAuthentication.HEADER_NAME, authentication.requiredClientToken()))
+        .build();
 
-    JsonNode listResult = request("tools/list", Map.of());
-    boolean hasTool = false;
-    for (JsonNode tool : listResult.path("tools")) {
-      if (SiteKnowledgeMcpController.TOOL_NAME.equals(tool.path("name").asText())) {
-        hasTool = true;
-        break;
+    try (McpSyncClient client = McpClient.sync(transport)
+        .clientInfo(new McpSchema.Implementation("shogun-sakura-chat", "1.0.0"))
+        .requestTimeout(Duration.ofSeconds(8))
+        .initializationTimeout(Duration.ofSeconds(8))
+        .build()) {
+      client.initialize();
+      boolean hasTool = client.listTools().tools().stream()
+          .anyMatch(tool -> SiteKnowledgeMcpController.TOOL_NAME.equals(tool.name()));
+      if (!hasTool) {
+        throw new SiteContentUnavailableException("MCP tool is unavailable.");
       }
-    }
-    if (!hasTool) {
-      throw new SiteContentUnavailableException("MCP tool is unavailable.");
-    }
-
-    JsonNode callResult = request("tools/call", Map.of(
-        "name", SiteKnowledgeMcpController.TOOL_NAME,
-        "arguments", Map.of()
-    ));
-    String text = callResult.path("content").path(0).path("text").asText("");
-    if (text.isBlank()) {
-      throw new SiteContentUnavailableException("MCP tool returned no content.");
-    }
-
-    try {
+      McpSchema.CallToolResult result = client.callTool(
+          new McpSchema.CallToolRequest(SiteKnowledgeMcpController.TOOL_NAME, Map.of()));
+      if (Boolean.TRUE.equals(result.isError()) || result.content().isEmpty()) {
+        throw new SiteContentUnavailableException("MCP tool returned no content.");
+      }
+      String text = extractText(result);
+      if (text.isBlank()) {
+        throw new SiteContentUnavailableException("MCP tool returned no content.");
+      }
       return objectMapper.readTree(text);
     } catch (IOException ex) {
       throw new SiteContentUnavailableException("MCP tool returned invalid JSON.");
-    }
-  }
-
-  private JsonNode request(String method, Map<String, Object> params) {
-    try {
-      String body = objectMapper.writeValueAsString(Map.of(
-          "jsonrpc", "2.0",
-          "id", ids.getAndIncrement(),
-          "method", method,
-          "params", params
-      ));
-      HttpRequest request = HttpRequest.newBuilder(mcpUri)
-          .timeout(Duration.ofSeconds(8))
-          .header("Content-Type", "application/json")
-          .header(McpAuthentication.HEADER_NAME, authentication.requiredClientToken())
-          .POST(HttpRequest.BodyPublishers.ofString(body))
-          .build();
-      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (response.statusCode() < 200 || response.statusCode() >= 300) {
-        throw new SiteContentUnavailableException("MCP request failed.");
-      }
-      JsonNode json = objectMapper.readTree(response.body());
-      if (json.has("error")) {
-        throw new SiteContentUnavailableException("MCP returned an error.");
-      }
-      return json.path("result");
-    } catch (IOException ex) {
+    } catch (RuntimeException ex) {
       throw new SiteContentUnavailableException("MCP request failed.");
-    } catch (InterruptedException ex) {
-      Thread.currentThread().interrupt();
-      throw new SiteContentUnavailableException("MCP request interrupted.");
     }
   }
 
-  private static URI resolveMcpUri(Environment environment) {
+  private String extractText(McpSchema.CallToolResult result) {
+    StringBuilder builder = new StringBuilder();
+    for (McpSchema.Content content : result.content()) {
+      if (content instanceof McpSchema.TextContent textContent) {
+        builder.append(textContent.text());
+      }
+    }
+    return builder.toString();
+  }
+
+  private static String resolveMcpBaseUrl(Environment environment) {
     String configured = environment.getProperty("MCP_BASE_URL");
     if (configured != null && !configured.isBlank()) {
-      return URI.create(configured.replaceAll("/+$", "") + "/mcp");
+      URI uri = URI.create(configured.replaceAll("/+$", ""));
+      String path = uri.getPath();
+      if (path != null && path.endsWith("/mcp")) {
+        return configured.replaceAll("/mcp/*$", "");
+      }
+      return configured.replaceAll("/+$", "");
     }
     String port = environment.getProperty("local.server.port",
         environment.getProperty("PORT", environment.getProperty("server.port", "8080")));
-    return URI.create("http://127.0.0.1:" + port + "/mcp");
+    return "http://127.0.0.1:" + port;
   }
 }

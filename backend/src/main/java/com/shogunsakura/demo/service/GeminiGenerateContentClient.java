@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,7 @@ public class GeminiGenerateContentClient {
   private final GeminiApiConfig config;
   private final URI endpoint;
 
+  @Autowired
   public GeminiGenerateContentClient(
       ObjectMapper objectMapper,
       GeminiApiConfig config,
@@ -48,7 +50,7 @@ public class GeminiGenerateContentClient {
     this.endpoint = endpoint;
   }
 
-  public String requestFunctionCall(String userMessage, String systemInstruction) {
+  public GeminiFunctionCall requestFunctionCall(String userMessage, String systemInstruction) {
     Map<String, Object> request = Map.of(
         "systemInstruction", textContent(systemInstruction),
         "contents", List.of(Map.of(
@@ -74,28 +76,49 @@ public class GeminiGenerateContentClient {
     );
 
     JsonNode response = post(request);
-    String toolName = extractFunctionCallName(response);
-    if (!SiteKnowledgeMcpController.TOOL_NAME.equals(toolName)) {
+    JsonNode modelContent = response.path("candidates").path(0).path("content");
+    JsonNode functionCall = extractFunctionCall(modelContent);
+    String toolName = functionCall.path("name").asText("");
+    if (!SiteKnowledgeMcpController.TOOL_NAME.equals(toolName) || !functionCall.path("args").isObject()) {
       throw new GeminiApiException("Unexpected Gemini function call.");
     }
-    return toolName;
+    return new GeminiFunctionCall(modelContent.deepCopy(), functionCall.deepCopy());
   }
 
-  public String requestFinalAnswer(String userMessage, String systemInstruction, JsonNode siteContent) {
-    Map<String, Object> functionCall = Map.of(
-        "name", SiteKnowledgeMcpController.TOOL_NAME,
-        "args", Map.of()
-    );
-    Map<String, Object> functionResponse = Map.of(
-        "name", SiteKnowledgeMcpController.TOOL_NAME,
-        "response", objectMapper.convertValue(siteContent, Map.class)
-    );
+  public String requestFinalAnswer(
+      String userMessage,
+      String systemInstruction,
+      GeminiFunctionCall functionCall,
+      JsonNode siteContent) {
+    Map<String, Object> functionResponse = new java.util.LinkedHashMap<>();
+    functionResponse.put("name", SiteKnowledgeMcpController.TOOL_NAME);
+    String id = functionCall.functionCall().path("id").asText("");
+    if (!id.isBlank()) {
+      functionResponse.put("id", id);
+    }
+    functionResponse.put("response", objectMapper.convertValue(siteContent, Map.class));
     Map<String, Object> request = Map.of(
         "systemInstruction", textContent(systemInstruction),
         "contents", List.of(
             Map.of("role", "user", "parts", List.of(Map.of("text", userMessage))),
-            Map.of("role", "model", "parts", List.of(Map.of("functionCall", functionCall))),
-            Map.of("role", "function", "parts", List.of(Map.of("functionResponse", functionResponse)))
+            objectMapper.convertValue(functionCall.modelContent(), Map.class),
+            Map.of("role", "user", "parts", List.of(Map.of("functionResponse", functionResponse)))
+        ),
+        "tools", List.of(Map.of(
+            "functionDeclarations", List.of(Map.of(
+                "name", SiteKnowledgeMcpController.TOOL_NAME,
+                "description", "SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。",
+                "parameters", Map.of(
+                    "type", "OBJECT",
+                    "properties", Map.of()
+                )
+            ))
+        )),
+        "toolConfig", Map.of(
+            "functionCallingConfig", Map.of(
+                "mode", "ANY",
+                "allowedFunctionNames", List.of(SiteKnowledgeMcpController.TOOL_NAME)
+            )
         ),
         "generationConfig", Map.of(
             "temperature", 0,
@@ -143,16 +166,17 @@ public class GeminiGenerateContentClient {
     return Map.of("parts", List.of(Map.of("text", text)));
   }
 
-  private String extractFunctionCallName(JsonNode response) {
-    for (JsonNode candidate : response.path("candidates")) {
-      for (JsonNode part : candidate.path("content").path("parts")) {
-        String name = part.path("functionCall").path("name").asText("");
-        if (!name.isBlank()) {
-          return name;
-        }
+  private JsonNode extractFunctionCall(JsonNode modelContent) {
+    if (!"model".equals(modelContent.path("role").asText(""))) {
+      throw new GeminiApiException("Gemini did not return model content.");
+    }
+    for (JsonNode part : modelContent.path("parts")) {
+      JsonNode functionCall = part.path("functionCall");
+      if (functionCall.isObject() && !functionCall.path("name").asText("").isBlank()) {
+        return functionCall;
       }
     }
-    return "";
+    throw new GeminiApiException("Gemini did not return a function call.");
   }
 
   private String extractText(JsonNode response) {
@@ -166,5 +190,8 @@ public class GeminiGenerateContentClient {
       }
     }
     return builder.toString().trim();
+  }
+
+  public record GeminiFunctionCall(JsonNode modelContent, JsonNode functionCall) {
   }
 }

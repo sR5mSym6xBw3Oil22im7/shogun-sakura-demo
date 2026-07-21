@@ -3,10 +3,12 @@ package com.shogunsakura.demo.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shogunsakura.demo.config.GeminiApiConfig;
 import com.shogunsakura.demo.exception.GeminiApiException;
 import com.shogunsakura.demo.mcp.SiteKnowledgeMcpController;
+import com.shogunsakura.demo.service.GeminiGenerateContentClient.GeminiFunctionCall;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,6 +18,7 @@ import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,17 +36,20 @@ class GeminiGenerateContentClientTest {
   @Test
   void parsesForcedFunctionCall() throws Exception {
     GeminiGenerateContentClient client = clientWithResponses(200, """
-        {"candidates":[{"content":{"parts":[{"functionCall":{"name":"get_shogun_sakura_site_content","args":{}}}]}}]}
+        {"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"get_shogun_sakura_site_content","args":{}}}]}}]}
         """);
 
-    assertThat(client.requestFunctionCall("価格は？", "system"))
+    GeminiFunctionCall functionCall = client.requestFunctionCall("価格は？", "system");
+
+    assertThat(functionCall.functionCall().path("name").asText())
         .isEqualTo(SiteKnowledgeMcpController.TOOL_NAME);
+    assertThat(functionCall.modelContent().path("role").asText()).isEqualTo("model");
   }
 
   @Test
   void rejectsUnexpectedFunctionCall() throws Exception {
     GeminiGenerateContentClient client = clientWithResponses(200, """
-        {"candidates":[{"content":{"parts":[{"functionCall":{"name":"other_tool","args":{}}}]}}]}
+        {"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"other_tool","args":{}}}]}}]}
         """);
 
     assertThatThrownBy(() -> client.requestFunctionCall("価格は？", "system"))
@@ -52,14 +58,28 @@ class GeminiGenerateContentClientTest {
   }
 
   @Test
-  void parsesFinalAnswer() throws Exception {
-    GeminiGenerateContentClient client = clientWithResponses(200, """
+  void parsesFinalAnswerAndSendsOfficialFunctionResponseShape() throws Exception {
+    AtomicReference<String> requestBody = new AtomicReference<>();
+    GeminiGenerateContentClient client = clientWithResponses(requestBody, 200, """
         {"candidates":[{"content":{"parts":[{"text":"セット内容は押し花1点と将軍の扇1点です。"}]}}]}
         """);
+    GeminiFunctionCall functionCall = new GeminiFunctionCall(
+        new ObjectMapper().readTree("{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"name\":\"get_shogun_sakura_site_content\",\"id\":\"call-1\",\"args\":{}}}]}"),
+        new ObjectMapper().readTree("{\"name\":\"get_shogun_sakura_site_content\",\"id\":\"call-1\",\"args\":{}}"));
 
-    String answer = client.requestFinalAnswer("セット内容は？", "system", new ObjectMapper().readTree("{\"pages\":[{\"text\":\"セット内容\"}]}"));
+    String answer = client.requestFinalAnswer(
+        "セット内容は？",
+        "system",
+        functionCall,
+        new ObjectMapper().readTree("{\"pages\":[{\"text\":\"セット内容\"}]}"));
+    JsonNode sent = new ObjectMapper().readTree(requestBody.get());
 
     assertThat(answer).isEqualTo("セット内容は押し花1点と将軍の扇1点です。");
+    assertThat(sent.path("contents").path(0).path("role").asText()).isEqualTo("user");
+    assertThat(sent.path("contents").path(1).path("role").asText()).isEqualTo("model");
+    assertThat(sent.path("contents").path(1).path("parts").path(0).path("functionCall").path("id").asText()).isEqualTo("call-1");
+    assertThat(sent.path("contents").path(2).path("role").asText()).isEqualTo("user");
+    assertThat(sent.path("contents").path(2).path("parts").path(0).path("functionResponse").path("id").asText()).isEqualTo("call-1");
   }
 
   @Test
@@ -77,15 +97,23 @@ class GeminiGenerateContentClientTest {
         {"candidates":[{"content":{"parts":[{"text":""}]}}]}
         """);
 
-    assertThatThrownBy(() -> client.requestFinalAnswer("価格は？", "system", new ObjectMapper().readTree("{\"pages\":[{\"text\":\"価格\"}]}")))
+    assertThatThrownBy(() -> client.requestFinalAnswer("価格は？", "system", functionCall(), new ObjectMapper().readTree("{\"pages\":[{\"text\":\"価格\"}]}")))
         .isInstanceOf(GeminiApiException.class);
   }
 
   private GeminiGenerateContentClient clientWithResponses(int statusCode, String body) throws IOException {
+    return clientWithResponses(new AtomicReference<>(), statusCode, body);
+  }
+
+  private GeminiGenerateContentClient clientWithResponses(
+      AtomicReference<String> requestBody,
+      int statusCode,
+      String body) throws IOException {
     Queue<Response> responses = new ArrayDeque<>();
     responses.add(new Response(statusCode, body));
     server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
     server.createContext("/", exchange -> {
+      requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
       Response response = responses.remove();
       byte[] bytes = response.body().getBytes(StandardCharsets.UTF_8);
       exchange.getResponseHeaders().add("Content-Type", "application/json");
@@ -101,6 +129,13 @@ class GeminiGenerateContentClientTest {
         new ObjectMapper(),
         new GeminiApiConfig(),
         endpoint);
+  }
+
+  private GeminiFunctionCall functionCall() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    return new GeminiFunctionCall(
+        mapper.readTree("{\"role\":\"model\",\"parts\":[{\"functionCall\":{\"name\":\"get_shogun_sakura_site_content\",\"args\":{}}}]}"),
+        mapper.readTree("{\"name\":\"get_shogun_sakura_site_content\",\"args\":{}}"));
   }
 
   private record Response(int statusCode, String body) {
