@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setStatus(status, data?.message || '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
         return;
       }
-      setStatus(status, data?.answer || 'このサイト内に記載がないため、お答えできません。', '');
+      setStatus(status, data?.answer || 'このサイト内に情報がないため、お答えできません。', '');
     } catch {
       setStatus(status, '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
     } finally {
@@ -132,6 +132,7 @@ function setStatus(status, message, tone) {
   }
 
   status.textContent = message;
+  status.hidden = !message;
   status.classList.toggle('is-error', tone === 'error');
 }
 
