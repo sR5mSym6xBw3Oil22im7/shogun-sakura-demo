@@ -39,6 +39,18 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 └── index.html             # ルート用のエントリページ
 ```
 
+## リポジトリルール
+
+- `README.md` は日本語で記述します。
+- `README.md` を更新する場合は、いったん既存の `README.md` ファイルを削除してから、改めて日本語で作成してください。
+- `.gitignore` でバイナリファイルをコミット対象外にしています。
+
+## README.md 更新手順
+
+1. 現在の `README.md` を削除します。
+2. `README.md` を日本語で新規作成します。
+3. 変更内容を Git にコミットします。
+
 ## 技術スタック
 
 - フロントエンド: HTML、CSS、Vanilla JavaScript

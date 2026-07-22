@@ -11,7 +11,17 @@ build/
 .idea/
 .vscode/
 *.iml
-
+# Binary files
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.lib
+*.bin
+*.out
+*.jar
 # Environment files and secrets
 .env
 .env.*
