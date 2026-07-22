@@ -24,9 +24,12 @@ Set the PostgreSQL connection values using the same keys shown in the Render Web
 - `SPRING_DATASOURCE_PASSWORD`
 - `SPRING_DATASOURCE_URL`
 - `SPRING_DATASOURCE_USERNAME`
+- `GEMINI_API_KEY`
 - `ALLOWED_ORIGINS`
 
-The backend builds a JDBC connection from those values and enables SSL for Render PostgreSQL.
+The backend uses `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
+`SPRING_DATASOURCE_PASSWORD` directly for its PostgreSQL connection. Set
+`GEMINI_API_KEY` to enable the AI chat feature.
 
 ## Notes
 

@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,7 @@ public class SiteContentService {
   private SiteContentResult cachedResult;
   private OffsetDateTime cachedAt;
 
+  @Autowired
   public SiteContentService(
       @Value("${SITE_SOURCE_BASE_URL:" + DEFAULT_BASE_URL + "}") String baseUrl) {
     this(HttpClient.newBuilder()

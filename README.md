@@ -50,32 +50,87 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 
 ### 前提条件
 
-- Windows 11 Pro と PowerShell
+Docker を使う場合:
+
+- Docker Desktop または Docker Engine（Compose v2 対応）
+- Xubuntu では `docker.io` と `docker-compose-v2` パッケージを利用できます。
+
+手動で起動する場合:
+
 - Java 21
 - Maven
 - バックエンドから接続できる PostgreSQL
 - フロントエンド配信用の静的サーバー。例: VS Code Live Server、または JDK 21 付属の `jwebserver`
 
-### バックエンドの起動
+Xubuntu で前提条件をインストールする例です。Docker を使う場合は Java、Maven、PostgreSQL のホストインストールは不要です。
 
-PowerShell でリポジトリルートへ移動し、PostgreSQL 接続情報と MCP 内部設定を環境変数として設定します。
-
-```powershell
-$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/shogun_sakura"
-$env:SPRING_DATASOURCE_USERNAME="shogun_sakura_user"
-$env:SPRING_DATASOURCE_PASSWORD="your_local_password"
-$env:MCP_INTERNAL_TOKEN="local-long-random-token"
-$env:SITE_SOURCE_BASE_URL="http://127.0.0.1:5500/frontend/"
-$env:ALLOWED_ORIGINS="http://localhost:5500,http://127.0.0.1:5500,null"
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker "$USER"
 ```
 
-`GEMINI_API_KEY` 環境変数は不要です。Gemini API キーの値は README やフロントエンドには記載しません。
+グループ変更を現在のターミナルへ反映するには、次を実行します。反映されない場合は一度ログアウトしてからログインし直してください。
 
-テストと API 起動を実行します。
+```bash
+newgrp docker
+```
 
-```powershell
-cd .\backend
+確認には次を実行します。
+
+```bash
+docker --version
+docker compose version
+```
+
+### Docker Compose で起動する
+
+リポジトリルートで次を実行します。PostgreSQL、Spring Boot API、フロントエンド配信サーバーがまとめて起動します。
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+`.env` の `GEMINI_API_KEY` を設定するとチャットもローカルで利用できます。空欄のままでも注文機能とサイト表示は起動します。DB パスワードや MCP 内部トークンを変更する場合も `.env` を編集してください。
+
+ブラウザで `http://127.0.0.1:5500/frontend/` を開きます。API のヘルスチェックは `http://127.0.0.1:8080/api/health` です。
+
+チャットもローカルで使う場合は、起動前に Gemini API キーを環境変数へ設定してください。未設定でも注文機能とサイト表示は起動します。
+
+```bash
+export GEMINI_API_KEY="your_gemini_api_key"
+docker compose up --build
+```
+
+停止するには `Ctrl+C` を押し、コンテナも削除する場合は `docker compose down` を実行します。注文データを含む PostgreSQL データも削除する場合は `docker compose down -v` を実行してください。
+
+### 手動でバックエンドを起動する
+
+リポジトリルートで、PostgreSQL 接続情報と MCP 内部設定を環境変数として設定します。
+
+```bash
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/shogun_sakura"
+export SPRING_DATASOURCE_USERNAME="shogun_sakura_user"
+export SPRING_DATASOURCE_PASSWORD="your_local_password"
+export MCP_INTERNAL_TOKEN="local-long-random-token"
+export SITE_SOURCE_BASE_URL="http://127.0.0.1:5500/frontend/"
+export ALLOWED_ORIGINS="http://localhost:5500,http://127.0.0.1:5500,null"
+```
+
+チャットを使う場合は `GEMINI_API_KEY` も設定してください。
+
+テストは `backend` ディレクトリで実行します。リポジトリルートでは POM が見つからないため、必ず `cd backend` してください。
+
+```bash
+cd backend
 mvn clean test
+```
+
+API を起動する場合は、テストとは別のターミナルで次を実行します。
+
+```bash
+cd backend
 mvn spring-boot:run
 ```
 
@@ -83,9 +138,9 @@ mvn spring-boot:run
 
 ### フロントエンドの起動
 
-別の PowerShell でリポジトリルートへ移動し、ルートを静的サーバーで配信します。
+別のターミナルでリポジトリルートへ移動し、ルートを静的サーバーで配信します。
 
-```powershell
+```bash
 jwebserver -p 5500
 ```
 
