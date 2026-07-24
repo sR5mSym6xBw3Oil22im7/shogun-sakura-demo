@@ -18,7 +18,11 @@ public class RenderPostgresConnectionChecker implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    String jdbcUrl = required("SPRING_DATASOURCE_URL");
+    String jdbcUrl = environment.getProperty("SPRING_DATASOURCE_URL");
+    if (!StringUtils.hasText(jdbcUrl)) {
+      System.err.println("RenderPostgresConnectionChecker skipped: SPRING_DATASOURCE_URL is not configured.");
+      return;
+    }
     String user = required("SPRING_DATASOURCE_USERNAME");
     String password = required("SPRING_DATASOURCE_PASSWORD");
 

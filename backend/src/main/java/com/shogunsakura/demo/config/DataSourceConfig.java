@@ -13,12 +13,13 @@ public class DataSourceConfig {
 
   @Bean
   public DataSource dataSource(Environment environment) {
-    String jdbcUrl = required(environment, "SPRING_DATASOURCE_URL");
-    String user = required(environment, "SPRING_DATASOURCE_USERNAME");
-    String password = required(environment, "SPRING_DATASOURCE_PASSWORD");
+    String jdbcUrl = environment.getProperty("SPRING_DATASOURCE_URL",
+        "jdbc:h2:mem:shogun_sakura;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false");
+    String user = environment.getProperty("SPRING_DATASOURCE_USERNAME", "sa");
+    String password = environment.getProperty("SPRING_DATASOURCE_PASSWORD", "");
 
     HikariConfig config = new HikariConfig();
-    config.setDriverClassName("org.postgresql.Driver");
+    config.setDriverClassName("org.h2.Driver");
     config.setJdbcUrl(jdbcUrl);
     config.setUsername(user);
     config.setPassword(password);

@@ -47,6 +47,22 @@ class GeminiGenerateContentClientTest {
   }
 
   @Test
+  void sendsToolDeclarationWithName() throws Exception {
+    AtomicReference<String> requestBody = new AtomicReference<>();
+    GeminiGenerateContentClient client = clientWithResponses(requestBody, 200, """
+        {"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"get_shogun_sakura_site_content","args":{}}}]}}]}
+        """);
+
+    client.requestFunctionCall("価格は？", "system");
+
+    JsonNode sent = new ObjectMapper().readTree(requestBody.get());
+    assertThat(sent.path("tools").get(0).path("name").asText())
+        .isEqualTo(SiteKnowledgeMcpController.TOOL_NAME);
+    assertThat(sent.path("tools").get(0).path("description").asText())
+        .isEqualTo("SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。");
+  }
+
+  @Test
   void rejectsUnexpectedFunctionCall() throws Exception {
     GeminiGenerateContentClient client = clientWithResponses(200, """
         {"candidates":[{"content":{"role":"model","parts":[{"functionCall":{"name":"other_tool","args":{}}}]}}]}

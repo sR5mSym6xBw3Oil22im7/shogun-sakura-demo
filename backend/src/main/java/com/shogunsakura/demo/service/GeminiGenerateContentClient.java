@@ -54,22 +54,20 @@ public class GeminiGenerateContentClient {
     Map<String, Object> request = Map.of(
         "systemInstruction", textContent(systemInstruction),
         "contents", List.of(Map.of(
-            "role", "user",
+            "role", "USER",
             "parts", List.of(Map.of("text", userMessage))
         )),
         "tools", List.of(Map.of(
-            "functionDeclarations", List.of(Map.of(
-                "name", SiteKnowledgeMcpController.TOOL_NAME,
-                "description", "SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。",
-                "parameters", Map.of(
-                    "type", "OBJECT",
-                    "properties", Map.of()
-                )
-            ))
+            "name", SiteKnowledgeMcpController.TOOL_NAME,
+            "description", "SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。",
+            "parameters", Map.of(
+                "type", "OBJECT",
+                "properties", Map.of()
+            )
         )),
         "toolConfig", Map.of(
             "functionCallingConfig", Map.of(
-                "mode", "ANY",
+                "mode", "AUTO",
                 "allowedFunctionNames", List.of(SiteKnowledgeMcpController.TOOL_NAME)
             )
         )
@@ -105,18 +103,16 @@ public class GeminiGenerateContentClient {
             Map.of("role", "user", "parts", List.of(Map.of("functionResponse", functionResponse)))
         ),
         "tools", List.of(Map.of(
-            "functionDeclarations", List.of(Map.of(
-                "name", SiteKnowledgeMcpController.TOOL_NAME,
-                "description", "SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。",
-                "parameters", Map.of(
-                    "type", "OBJECT",
-                    "properties", Map.of()
-                )
-            ))
+            "name", SiteKnowledgeMcpController.TOOL_NAME,
+            "description", "SHOGUN SAKURA公式デモサイトの固定許可ページ本文を取得します。",
+            "parameters", Map.of(
+                "type", "OBJECT",
+                "properties", Map.of()
+            )
         )),
         "toolConfig", Map.of(
             "functionCallingConfig", Map.of(
-                "mode", "ANY",
+                "mode", "AUTO",
                 "allowedFunctionNames", List.of(SiteKnowledgeMcpController.TOOL_NAME)
             )
         ),
@@ -132,6 +128,80 @@ public class GeminiGenerateContentClient {
       throw new GeminiApiException("Gemini returned an empty answer.");
     }
     return answer.length() > MAX_ANSWER_CHARS ? answer.substring(0, MAX_ANSWER_CHARS) : answer;
+  }
+
+  public String requestDirectAnswer(String userMessage, String systemInstruction, JsonNode siteContent) {
+    String prompt = buildDirectPrompt(userMessage, siteContent);
+    Map<String, Object> request = Map.of(
+        "systemInstruction", textContent(systemInstruction),
+        "contents", List.of(Map.of(
+            "role", "USER",
+            "parts", List.of(Map.of("text", prompt))
+        )),
+        "generationConfig", Map.of(
+            "temperature", 0,
+            "maxOutputTokens", 256
+        )
+    );
+
+    JsonNode response = post(request);
+    String answer = extractText(response);
+    if (answer.isBlank()) {
+      throw new GeminiApiException("Gemini returned an empty direct answer.");
+    }
+    return answer;
+  }
+
+  private String buildDirectPrompt(String userMessage, JsonNode siteContent) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("以下のサイト本文を参照して、質問に答えてください。\n");
+    builder.append("サイト本文:\n");
+    for (JsonNode page : siteContent.path("pages")) {
+      String title = page.path("title").asText("");
+      String url = page.path("url").asText("");
+      String text = page.path("text").asText("");
+      if (!title.isBlank()) {
+        builder.append("タイトル: ").append(title).append("\n");
+      }
+      if (!url.isBlank()) {
+        builder.append("URL: ").append(url).append("\n");
+      }
+      if (!text.isBlank()) {
+        builder.append(text).append("\n");
+      }
+      builder.append("\n");
+    }
+    builder.append("質問: ").append(userMessage).append("\n");
+    builder.append("サイト本文に該当する回答がなければ、\"このサイト内に記載がないため、お答えできません。\"だけを回答してください。\n");
+    return builder.toString();
+  }
+
+  private String siteContentText(JsonNode siteContent) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("サイト本文:\n");
+    for (JsonNode page : siteContent.path("pages")) {
+      String title = page.path("title").asText("");
+      String url = page.path("url").asText("");
+      String text = page.path("text").asText("");
+      if (!title.isBlank()) {
+        builder.append("タイトル: ").append(title).append("\n");
+      }
+      if (!url.isBlank()) {
+        builder.append("URL: ").append(url).append("\n");
+      }
+      if (!text.isBlank()) {
+        builder.append(text).append("\n");
+      }
+      builder.append("\n");
+    }
+    if (siteContent.has("errors") && siteContent.path("errors").isArray()) {
+      for (JsonNode error : siteContent.path("errors")) {
+        if (!error.asText().isBlank()) {
+          builder.append("ERROR: ").append(error.asText()).append("\n");
+        }
+      }
+    }
+    return builder.toString();
   }
 
   private JsonNode post(Map<String, Object> payload) {

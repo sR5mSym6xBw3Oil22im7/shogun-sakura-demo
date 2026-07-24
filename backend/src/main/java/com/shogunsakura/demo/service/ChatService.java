@@ -27,18 +27,23 @@ public class ChatService {
 
   public String answer(String rawMessage) {
     String message = rawMessage == null ? "" : rawMessage.trim();
+    if (message.isEmpty()) {
+      return UNANSWERABLE_MESSAGE;
+    }
     try {
-      GeminiFunctionCall functionCall = geminiClient.requestFunctionCall(message, systemInstruction);
       JsonNode siteContent = mcpClient.callSiteContentTool();
       if (!hasUsableSiteContent(siteContent)) {
         return UNANSWERABLE_MESSAGE;
       }
-      String answer = geminiClient.requestFinalAnswer(message, systemInstruction, functionCall, siteContent).trim();
-      if (answer.isBlank() || revealsRestrictedInformation(answer)) {
-        return UNANSWERABLE_MESSAGE;
+
+      String answer = geminiClient.requestDirectAnswer(message, systemInstruction, siteContent).trim();
+      if (!answer.isBlank() && !revealsRestrictedInformation(answer)) {
+        return answer;
       }
-      return answer;
+      return UNANSWERABLE_MESSAGE;
     } catch (GeminiApiException | SiteContentUnavailableException | IllegalStateException ex) {
+      System.err.println("ChatService answer fail: " + ex.getMessage());
+      ex.printStackTrace(System.err);
       return UNANSWERABLE_MESSAGE;
     }
   }

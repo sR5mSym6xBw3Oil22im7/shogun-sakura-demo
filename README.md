@@ -1,6 +1,6 @@
 # SHOGUN SAKURA
 
-SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは GitHub Pages で公開する静的サイト、バックエンドは Render にデプロイする Spring Boot API で構成されています。注文データはデモ用レコードとして PostgreSQL に保存します。
+SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは静的 HTML/CSS/JavaScript で構成され、バックエンドは Spring Boot REST API を使って注文受付、注文履歴、AI チャット機能を提供します。
 
 ## 公開 URL
 
@@ -10,44 +10,36 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 
 ## 主な機能
 
-- HTML、CSS、JavaScript による静的な商品・注文フロー
-- 注文確認画面からバックエンド API へデモ注文を送信
-- 注文履歴画面で保存済み注文を API から取得
-- SHOGUN SAKURA サイト本文だけを根拠に回答するテキスト専用 AI チャット
-- Spring Boot REST API による入力バリデーション
-- PostgreSQL への注文レコード保存
-- GitHub Pages とローカル開発向けの CORS 設定
+- 商品紹介と注文のデモフロー
+- 注文フォームからバックエンド API へのデモ注文送信
+- 注文履歴画面で保存済み注文の一覧表示
+- サイト本文に基づく AI チャット回答
+- Spring Boot による REST API と入力バリデーション
+- PostgreSQL への注文データ保存
+- GitHub Pages / ローカル開発向けの CORS 設定
 
 ## ディレクトリ構成
 
 ```text
 .
-├── frontend/              # GitHub Pages で公開するフロントエンド
+├── frontend/              # 静的フロントエンド
 ├── backend/               # Spring Boot バックエンド
-├── docs/                  # 追加の静的ページ出力
-├── render.yaml            # Render サービス定義
-└── index.html             # ルート用のエントリページ
+├── docs/                  # 追加の静的ページ
+├── render.yaml            # Render 用サービス定義
+└── index.html             # ルート用エントリページ
 ```
 
-## README 更新ルール
-
-- README は日本語で記述します。
-- 既存内容を保持し、必要な箇所だけを差分編集します。
-- 秘密情報は記載しません。
-
 ## 前提条件
-
-Xubuntu 上での開発・実行に必要な基本要件です。
 
 - Bash
 - Git
 - Docker Engine
 - Docker Compose v2
-- 手動起動時のみ Java 21
-- Maven Wrapper を使用するため、ホストへの Maven インストールは原則不要
-- Selenium テスト実行時のみ Google Chrome または Chromium
+- Java 21（手動起動時に必要）
+- Maven Wrapper（`backend` で使用）
+- Selenium テスト実行時は Chrome または Chromium
 
-Docker を Xubuntu へ導入する例です。
+### Docker の例
 
 ```bash
 sudo apt update
@@ -55,13 +47,13 @@ sudo apt install -y git curl ca-certificates docker.io docker-compose-v2 openjdk
 sudo systemctl enable --now docker
 ```
 
-非 root で Docker を利用する場合は、次を実行してください。設定は再ログイン後に有効になります。
+非 root で Docker を利用する場合:
 
 ```bash
 sudo usermod -aG docker "$USER"
 ```
 
-動作確認コマンドは次の通りです。
+### 動作確認コマンド
 
 ```bash
 bash --version
@@ -71,7 +63,7 @@ docker compose version
 java -version
 ```
 
-Selenium テストを実行する場合は、ブラウザが利用可能であることを確認してください。
+### Selenium テスト用ブラウザ確認
 
 ```bash
 google-chrome --version
@@ -85,7 +77,7 @@ chromium --version
 
 ```bash
 cp .env.example .env
-# 必要な場合のみ .env の GEMINI_API_KEY 等を編集する
+# 必要な場合のみ .env の GEMINI_API_KEY 等を編集
 docker compose up --build
 ```
 
@@ -95,7 +87,7 @@ docker compose up --build
 docker compose down
 ```
 
-PostgreSQL のローカルデータも削除する場合は、次を実行してください。
+PostgreSQL のローカルデータも削除する場合は:
 
 ```bash
 docker compose down -v
@@ -103,7 +95,9 @@ docker compose down -v
 
 ## 手動で起動する
 
-バックエンドは `backend` ディレクトリで Maven Wrapper を使って起動します。
+### バックエンド
+
+`backend` ディレクトリで Maven Wrapper を使って起動します。
 
 ```bash
 cd backend
@@ -111,7 +105,21 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-フロントエンドは、リポジトリルートで Java 21 付属の静的サーバーを利用できます。
+別ポートで起動する場合:
+
+```bash
+cd backend
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+```
+
+`frontend/index.html` の `window.API_BASE_URL` は、ローカルで `file://` から開いた場合に `http://localhost:8080` になるように設定されています。
+
+- バックエンドを `8080` で起動すると、`frontend/index.html` とそのまま連携します。
+- それ以外のポートで起動する場合は、`frontend/index.html` の `API_BASE_URL` を変更するか、静的サーバーを使って開いてください。
+
+### フロントエンド
+
+Java 21 の静的サーバーを使う例:
 
 ```bash
 jwebserver -p 5500
@@ -119,7 +127,7 @@ jwebserver -p 5500
 
 ## Selenium テスト
 
-Chrome または Chromium が必要です。Selenium Manager がドライバを取得または検出できるネットワーク・実行環境が必要です。ブラウザ実行ファイルを自動検出できない場合は `CHROME_BIN` を設定できます。
+Chrome または Chromium が必要です。Selenium Manager がドライバを取得できる環境で実行してください。
 
 ```bash
 export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
@@ -127,11 +135,15 @@ cd backend
 ./mvnw test
 ```
 
-Docker Compose 連携テストを実行する場合は、先に `docker compose up --build -d` を実行してください。
+Docker Compose 連携テストを実行する場合は、先に:
+
+```bash
+docker compose up --build -d
+```
 
 ## クリーンアップ
 
-生成物を削除するには次を実行します。
+生成物を削除するには:
 
 ```bash
 ./scripts/clean-generated.sh
@@ -185,7 +197,7 @@ Docker Compose 連携テストを実行する場合は、先に `docker compose 
 
 ### `GET /api/orders`
 
-注文履歴画面で表示する保存済みのデモ注文を返します。
+保存済みの注文一覧を返します。
 
 ```json
 [
@@ -206,7 +218,7 @@ Docker Compose 連携テストを実行する場合は、先に `docker compose 
 
 ### `POST /api/chat`
 
-SHOGUN SAKURA サイト本文に基づく AI チャット回答を返します。フロントエンドはこの API だけを呼び、Gemini API や内部用 `/mcp` エンドポイントを直接呼びません。
+AI チャット回答を返します。フロントエンドはこの API のみを呼び出します。
 
 ```json
 {
@@ -227,7 +239,7 @@ SHOGUN SAKURA サイト本文に基づく AI チャット回答を返します�
 }
 ```
 
-サイト本文に根拠がない場合は、次の固定文を返します。
+根拠がない場合の固定応答:
 
 ```text
 このサイト内に記載がないため、お答えできません。
@@ -235,60 +247,9 @@ SHOGUN SAKURA サイト本文に基づく AI チャット回答を返します�
 
 ### 内部 MCP
 
-`/mcp` はバックエンド内部の AI チャット処理専用です。`MCP_INTERNAL_TOKEN` と Origin 検証で保護し、フロントエンドから直接呼び出しません。
+`/mcp` はバックエンド内部で AI チャット用のサイト本文取得に使う内部エンドポイントです。フロントエンドから直接呼び出しません。
 
-## ローカル開発の補足（file:// と CORS）
+## ローカル開発の補足
 
-ローカルで動作確認するときの注意点と簡易手順をまとめます。
-
-- file:// で直接ファイルを開く場合
-  - ブラウザの Origin は `null` になります。開発の利便性のため、Compose 設定では `ALLOWED_ORIGINS` に `null` を追加している場合があります。公開環境では `null` を許可しないでください。
-  - file:// でテストする場合でも、バックエンド（`http://localhost:8080`）が先に起動している必要があります。
-
-- 推奨されるローカル確認方法
-  - フロントをローカルで HTTP 配信して確認する方法を推奨します（再現性とブラウザ挙動の観点から）。本リポジトリでは `frontend` サービス（nginx）を使って `http://localhost:5500` で配信できます。
-
-- 簡易起動手順
-
-```bash
-cp .env.example .env
-docker compose up -d db backend frontend
-# バックエンドのヘルスチェック
-curl -i http://localhost:8080/api/health
-```
-
-- file:// を使う場合の補足
-  - file:// の Origin は `null` となるため、CORS 設定で `null` を許可していないとフロントからのリクエストがブロックされます。開発用に `compose.yaml` に `null` を追加した場合は本番環境に反映しないよう注意してください。
-
-- テスト実行
-
-```bash
-cd backend
-./mvnw -Dtest=FrontendFlowTest test
-```
-
-この節はローカル開発向けの補足情報で、Render 側の公開設定や実運用の設定は変更していません。
-
-## デプロイ
-
-### フロントエンド
-
-フロントエンドは、このリポジトリから GitHub Pages に公開します。
-
-### バックエンド
-
-バックエンドは Render の Docker Web Service としてデプロイします。
-
-- サービス名: `shogun-sakura-demo`
-- Docker コンテキスト: `backend`
-- Dockerfile: `backend/Dockerfile`
-- ヘルスチェックパス: `/api/health`
-- 自動デプロイ: `render.yaml` で有効
-
-Render 向けの補足は `backend/RENDER.md` に記載しています。
-
-## デモとしての注意点
-
-- 実際の決済、配送、認証、在庫管理は実装していません。
-- 送信された注文はデモ用レコードです。
-- 商品情報はバックエンドで固定しており、商品名は `SHOGUN SAKURA SET`、単価は `4800` です。
+- `file://` で直接ファイルを開くとブラウザの Origin は `null` になります。公開環境では `null` を許可しないでください。
+- `file://` でテストする場合もバックエンドが先に起動している必要があります。
