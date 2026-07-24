@@ -12,11 +12,11 @@ public class GeminiApiConfig {
   private final String apiKey;
 
   public GeminiApiConfig(Environment environment) {
-    this(environment.getRequiredProperty("GEMINI_API_KEY"));
+    this(resolveApiKey(environment));
   }
 
   public GeminiApiConfig() {
-    this((String) null);
+    this(resolveApiKey());
   }
 
   public GeminiApiConfig(String apiKey) {
@@ -32,5 +32,26 @@ public class GeminiApiConfig {
       throw new IllegalStateException("GEMINI_API_KEY environment variable is required.");
     }
     return configuredApiKey.trim();
+  }
+
+  private static String resolveApiKey() {
+    return resolveApiKey(null);
+  }
+
+  private static String resolveApiKey(Environment environment) {
+    String configuredApiKey = null;
+    if (environment != null) {
+      configuredApiKey = environment.getProperty("GEMINI_API_KEY");
+      if (!StringUtils.hasText(configuredApiKey)) {
+        configuredApiKey = environment.getProperty("gemini.api.key");
+      }
+    }
+    if (!StringUtils.hasText(configuredApiKey)) {
+      configuredApiKey = System.getProperty("GEMINI_API_KEY");
+    }
+    if (!StringUtils.hasText(configuredApiKey)) {
+      configuredApiKey = System.getenv("GEMINI_API_KEY");
+    }
+    return configuredApiKey;
   }
 }

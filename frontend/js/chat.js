@@ -135,6 +135,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function resolveChatApiBaseUrl() {
+  // When opened via file:// (local disk), prefer the local backend on localhost
+  if (typeof window.location === 'object' && window.location.protocol === 'file:') {
+    return 'http://localhost:8080';
+  }
+
   var raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
   return raw.replace(/\/+$/, '');
 }
