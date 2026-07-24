@@ -124,6 +124,45 @@ class FrontendFlowTest {
   }
 
   @Test
+  void orderSubmissionUsesLocalApiWhenPageIsOpenedFromFileUrl() throws Exception {
+    Path confirmationPage = SeleniumTestSupport.resolveFrontendDir().resolve("orderConfirmation.html").toAbsolutePath();
+
+    Path frontendDir = confirmationPage.getParent();
+    Path preloader = frontendDir.resolve("__preload_for_test.html");
+    String preloadHtml = "<!doctype html><html><head><meta charset=\"utf-8\"></head><body>" +
+        "<script>window.sessionStorage.setItem('pendingOrderQuantity','1');location.href='orderConfirmation.html';</script>" +
+        "</body></html>";
+    try {
+      java.nio.file.Files.writeString(preloader, preloadHtml);
+
+      // Open the preloader which sets sessionStorage for the file origin and redirects
+      driver.get(preloader.toUri().toString());
+      waitForDocumentReady();
+
+      wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-confirm-order-button]")));
+      click(By.cssSelector("[data-confirm-order-button]"));
+
+        // After clicking, the file:// page should navigate to orderConfirmed.html (file URL).
+        wait.until(ExpectedConditions.urlContains("orderConfirmed.html"));
+
+        // Verify the real backend (localhost:8080) has stored the demo order.
+        java.net.http.HttpClient httpClient = java.net.http.HttpClient.newHttpClient();
+        java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+          .uri(java.net.URI.create("http://localhost:8080/api/orders"))
+          .GET()
+          .build();
+        java.net.http.HttpResponse<String> resp = httpClient.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+        com.fasterxml.jackson.databind.JsonNode orders = OBJECT_MAPPER.readTree(resp.body());
+        assertThat(orders.isArray() ? orders.size() : 0).isGreaterThan(0);
+    } finally {
+      try {
+        java.nio.file.Files.deleteIfExists(preloader);
+      } catch (Exception ignore) {
+      }
+    }
+  }
+
+  @Test
   void orderHistoryPageRendersFetchedOrders() {
     openPage("/frontend/orderhistory.html");
 

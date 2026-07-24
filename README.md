@@ -237,6 +237,38 @@ SHOGUN SAKURA サイト本文に基づく AI チャット回答を返します�
 
 `/mcp` はバックエンド内部の AI チャット処理専用です。`MCP_INTERNAL_TOKEN` と Origin 検証で保護し、フロントエンドから直接呼び出しません。
 
+## ローカル開発の補足（file:// と CORS）
+
+ローカルで動作確認するときの注意点と簡易手順をまとめます。
+
+- file:// で直接ファイルを開く場合
+  - ブラウザの Origin は `null` になります。開発の利便性のため、Compose 設定では `ALLOWED_ORIGINS` に `null` を追加している場合があります。公開環境では `null` を許可しないでください。
+  - file:// でテストする場合でも、バックエンド（`http://localhost:8080`）が先に起動している必要があります。
+
+- 推奨されるローカル確認方法
+  - フロントをローカルで HTTP 配信して確認する方法を推奨します（再現性とブラウザ挙動の観点から）。本リポジトリでは `frontend` サービス（nginx）を使って `http://localhost:5500` で配信できます。
+
+- 簡易起動手順
+
+```bash
+cp .env.example .env
+docker compose up -d db backend frontend
+# バックエンドのヘルスチェック
+curl -i http://localhost:8080/api/health
+```
+
+- file:// を使う場合の補足
+  - file:// の Origin は `null` となるため、CORS 設定で `null` を許可していないとフロントからのリクエストがブロックされます。開発用に `compose.yaml` に `null` を追加した場合は本番環境に反映しないよう注意してください。
+
+- テスト実行
+
+```bash
+cd backend
+./mvnw -Dtest=FrontendFlowTest test
+```
+
+この節はローカル開発向けの補足情報で、Render 側の公開設定や実運用の設定は変更していません。
+
 ## デプロイ
 
 ### フロントエンド

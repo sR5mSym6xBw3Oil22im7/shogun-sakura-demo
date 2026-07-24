@@ -80,8 +80,24 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function resolveApiBaseUrl() {
-  var raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
+  var raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || getDefaultApiBaseUrl();
   return raw.replace(/\/+$/, '');
+}
+
+function getDefaultApiBaseUrl() {
+  if (isLocalEnvironment()) {
+    return 'http://localhost:8080';
+  }
+
+  return 'https://shogun-sakura-demo.onrender.com';
+}
+
+function isLocalEnvironment() {
+  return location.protocol === 'file:' ||
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1' ||
+    location.hostname === '[::1]' ||
+    location.hostname === '';
 }
 
 function getStoredQuantity() {
