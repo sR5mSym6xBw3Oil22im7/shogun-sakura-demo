@@ -32,10 +32,7 @@ class ComposeChatbotFlowTest {
     Assumptions.assumeTrue(isReachable(FRONTEND_URL), "Docker Compose frontend is not reachable.");
 
     ChromeOptions options = new ChromeOptions();
-    options.setBinary("/usr/bin/google-chrome");
     options.addArguments("--headless=new");
-    options.addArguments("--no-sandbox");
-    options.addArguments("--disable-dev-shm-usage");
     options.addArguments("--window-size=1440,1200");
 
     driver = new ChromeDriver(options);
@@ -77,8 +74,8 @@ class ComposeChatbotFlowTest {
   }
 
   private void waitForDocumentReady() {
-    wait.until(webDriver ->
-        "complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")));
+    wait.until(
+        webDriver -> "complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")));
   }
 
   private boolean isReachable(String url) {

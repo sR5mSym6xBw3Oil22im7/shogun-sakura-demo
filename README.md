@@ -74,21 +74,7 @@ Docker を使う場合:
 - バックエンドから接続できる PostgreSQL
 - フロントエンド配信用の静的サーバー。例: VS Code Live Server、または JDK 21 付属の `jwebserver`
 
-Xubuntu で前提条件をインストールする例です。Docker を使う場合は Java、Maven、PostgreSQL のホストインストールは不要です。
-
-```bash
-sudo apt update
-sudo apt install -y docker.io docker-compose-v2
-sudo usermod -aG docker "$USER"
-```
-
-グループ変更を現在のターミナルへ反映するには、次を実行します。反映されない場合は一度ログアウトしてからログインし直してください。
-
-```bash
-newgrp docker
-```
-
-確認には次を実行します。
+Docker を使う場合は Java、Maven、PostgreSQL のホストインストールは不要です。
 
 ```bash
 docker --version
@@ -111,7 +97,10 @@ docker compose up --build
 チャットもローカルで使う場合は、起動前に Gemini API キーを環境変数へ設定してください。未設定でも注文機能とサイト表示は起動します。
 
 ```bash
+# bash/zsh
 export GEMINI_API_KEY="your_gemini_api_key"
+# PowerShell
+# $env:GEMINI_API_KEY = "your_gemini_api_key"
 docker compose up --build
 ```
 
@@ -122,12 +111,20 @@ docker compose up --build
 リポジトリルートで、PostgreSQL 接続情報と MCP 内部設定を環境変数として設定します。
 
 ```bash
+# bash/zsh
 export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/shogun_sakura"
 export SPRING_DATASOURCE_USERNAME="shogun_sakura_user"
 export SPRING_DATASOURCE_PASSWORD="your_local_password"
 export MCP_INTERNAL_TOKEN="local-long-random-token"
 export SITE_SOURCE_BASE_URL="http://127.0.0.1:5500/frontend/"
 export ALLOWED_ORIGINS="http://localhost:5500,http://127.0.0.1:5500,null"
+# PowerShell
+# $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5432/shogun_sakura"
+# $env:SPRING_DATASOURCE_USERNAME = "shogun_sakura_user"
+# $env:SPRING_DATASOURCE_PASSWORD = "your_local_password"
+# $env:MCP_INTERNAL_TOKEN = "local-long-random-token"
+# $env:SITE_SOURCE_BASE_URL = "http://127.0.0.1:5500/frontend/"
+# $env:ALLOWED_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,null"
 ```
 
 チャットを使う場合は `GEMINI_API_KEY` も設定してください。

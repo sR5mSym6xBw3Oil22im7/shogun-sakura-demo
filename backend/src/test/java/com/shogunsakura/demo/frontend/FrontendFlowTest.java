@@ -63,10 +63,7 @@ class FrontendFlowTest {
     apiServer.start();
 
     ChromeOptions options = new ChromeOptions();
-    options.setBinary("/usr/bin/google-chrome");
     options.addArguments("--headless=new");
-    options.addArguments("--no-sandbox");
-    options.addArguments("--disable-dev-shm-usage");
     options.addArguments("--window-size=1440,1200");
 
     driver = new ChromeDriver(options);
@@ -98,7 +95,8 @@ class FrontendFlowTest {
     WebElement form = driver.findElement(By.cssSelector("[data-order-form]"));
     ((JavascriptExecutor) driver).executeScript("arguments[0].requestSubmit();", form);
 
-    wait.until(ExpectedConditions.textToBe(By.cssSelector("[data-error-for='email']"), "Please enter a valid email address."));
+    wait.until(
+        ExpectedConditions.textToBe(By.cssSelector("[data-error-for='email']"), "Please enter a valid email address."));
     assertThat(driver.getCurrentUrl()).endsWith("/frontend/index.html");
     assertThat(text("[data-error-for='email']")).isEqualTo("Please enter a valid email address.");
     assertThat(text("[data-form-status]")).isEqualTo("Please check the form fields.");
@@ -153,7 +151,8 @@ class FrontendFlowTest {
 
     click(By.cssSelector("[data-chatbot-send]"));
 
-    wait.until(ExpectedConditions.textToBePresentInElementLocated(By.cssSelector("[data-chatbot-messages]"), "税込のデモ価格で4,800円です。"));
+    wait.until(ExpectedConditions.textToBePresentInElementLocated(By.cssSelector("[data-chatbot-messages]"),
+        "税込のデモ価格で4,800円です。"));
 
     String pageText = driver.findElement(By.tagName("body")).getText();
     assertThat(pageText).contains("価格を教えてください");
@@ -179,8 +178,8 @@ class FrontendFlowTest {
   }
 
   private void waitForDocumentReady() {
-    wait.until(webDriver ->
-        "complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")));
+    wait.until(
+        webDriver -> "complete".equals(((JavascriptExecutor) webDriver).executeScript("return document.readyState")));
   }
 
   private static final class StaticFrontendHandler implements HttpHandler {
@@ -337,7 +336,8 @@ class FrontendFlowTest {
     }
   }
 
-  private static void sendJson(HttpExchange exchange, int status, String body, String allowedOrigin) throws IOException {
+  private static void sendJson(HttpExchange exchange, int status, String body, String allowedOrigin)
+      throws IOException {
     sendResponse(exchange, status, body, "application/json; charset=UTF-8", allowedOrigin);
   }
 
@@ -351,12 +351,14 @@ class FrontendFlowTest {
     sendResponse(exchange, status, body, contentType, null);
   }
 
-  private static void sendResponse(HttpExchange exchange, int status, String body, String contentType, String allowedOrigin)
+  private static void sendResponse(HttpExchange exchange, int status, String body, String contentType,
+      String allowedOrigin)
       throws IOException {
     sendResponse(exchange, status, body.getBytes(StandardCharsets.UTF_8), contentType, allowedOrigin);
   }
 
-  private static void sendResponse(HttpExchange exchange, int status, byte[] body, String contentType, String allowedOrigin)
+  private static void sendResponse(HttpExchange exchange, int status, byte[] body, String contentType,
+      String allowedOrigin)
       throws IOException {
     Headers headers = exchange.getResponseHeaders();
     headers.set("Content-Type", contentType);

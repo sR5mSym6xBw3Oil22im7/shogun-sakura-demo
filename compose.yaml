@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: shogun_sakura_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_password}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U shogun_sakura_user -d shogun_sakura"]
+      test: ["CMD", "pg_isready", "-U", "shogun_sakura_user", "-d", "shogun_sakura"]
       interval: 5s
       timeout: 5s
       retries: 12
