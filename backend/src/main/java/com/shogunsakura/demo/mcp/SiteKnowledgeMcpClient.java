@@ -88,8 +88,6 @@ public class SiteKnowledgeMcpClient {
       }
       return configured.replaceAll("/+$", "");
     }
-    String port = environment.getProperty("local.server.port",
-        environment.getProperty("PORT", environment.getProperty("server.port", "8080")));
-    return "http://127.0.0.1:" + port;
+    throw new IllegalStateException("MCP_BASE_URL environment variable is required.");
   }
 }

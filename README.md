@@ -77,7 +77,7 @@ chromium --version
 
 ```bash
 cp .env.example .env
-# 必要な場合のみ .env の GEMINI_API_KEY 等を編集
+# .env では GEMINI_API_KEY, MCP_INTERNAL_TOKEN, MCP_BASE_URL を必ず設定してください
 docker compose up --build
 ```
 

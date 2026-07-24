@@ -27,6 +27,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(
@@ -38,7 +40,10 @@ import org.springframework.test.context.TestPropertySource;
         org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration.class,
         SiteKnowledgeMcpControllerTest.TestConfig.class
     })
-@TestPropertySource(properties = "MCP_INTERNAL_TOKEN=test-token")
+@TestPropertySource(properties = {
+    "MCP_INTERNAL_TOKEN=test-token",
+    "MCP_BASE_URL=http://127.0.0.1:${local.server.port}"
+})
 class SiteKnowledgeMcpControllerTest {
 
   @LocalServerPort

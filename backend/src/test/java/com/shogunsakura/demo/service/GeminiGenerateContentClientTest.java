@@ -70,7 +70,7 @@ class GeminiGenerateContentClientTest {
 
     assertThatThrownBy(() -> client.requestFunctionCall("価格は？", "system"))
         .isInstanceOf(GeminiApiException.class)
-        .hasMessageNotContaining(new GeminiApiConfig().apiKey());
+        .hasMessageNotContaining(new GeminiApiConfig("test-key").apiKey());
   }
 
   @Test
@@ -104,7 +104,7 @@ class GeminiGenerateContentClientTest {
 
     assertThatThrownBy(() -> client.requestFunctionCall("価格は？", "system"))
         .isInstanceOf(GeminiApiException.class)
-        .hasMessageNotContaining(new GeminiApiConfig().apiKey());
+        .hasMessageNotContaining(new GeminiApiConfig("test-key").apiKey());
   }
 
   @Test
@@ -143,7 +143,7 @@ class GeminiGenerateContentClientTest {
     return new GeminiGenerateContentClient(
         HttpClient.newHttpClient(),
         new ObjectMapper(),
-        new GeminiApiConfig(),
+        new GeminiApiConfig("test-key"),
         endpoint);
   }
 

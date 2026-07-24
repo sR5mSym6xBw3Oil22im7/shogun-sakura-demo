@@ -22,11 +22,14 @@ Set the PostgreSQL connection values and Gemini API key in the Render Dashboard.
 - `SPRING_DATASOURCE_USERNAME`
 - `SPRING_DATASOURCE_PASSWORD`
 - `GEMINI_API_KEY`
+- `MCP_INTERNAL_TOKEN`
+- `MCP_BASE_URL`
 - `ALLOWED_ORIGINS`
 
 The backend uses `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
 `SPRING_DATASOURCE_PASSWORD` directly for its PostgreSQL connection. Set
-`GEMINI_API_KEY` to enable the AI chat feature.
+`GEMINI_API_KEY`, `MCP_INTERNAL_TOKEN`, and `MCP_BASE_URL` in the service
+settings to enable the AI chat and MCP integration.
 
 ## Notes
 
