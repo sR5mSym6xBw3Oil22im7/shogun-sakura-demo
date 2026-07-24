@@ -22,19 +22,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 class ComposeChatbotFlowTest {
 
   private static final Duration WAIT_TIMEOUT = Duration.ofSeconds(10);
-  private static final String FRONTEND_URL = "http://localhost:5500/frontend/index.html";
 
   private WebDriver driver;
   private WebDriverWait wait;
 
   @BeforeEach
   void setUp() {
-    Assumptions.assumeTrue(isReachable(FRONTEND_URL), "Docker Compose frontend is not reachable.");
+    String frontendUrl = SeleniumTestSupport.resolveFrontendTestUrl();
+    Assumptions.assumeTrue(isReachable(frontendUrl), "Docker Compose frontend is not reachable.");
 
-    ChromeOptions options = new ChromeOptions();
-    options.addArguments("--headless=new");
-    options.addArguments("--window-size=1440,1200");
-
+    ChromeOptions options = SeleniumTestSupport.createChromeOptions();
     driver = new ChromeDriver(options);
     wait = new WebDriverWait(driver, WAIT_TIMEOUT);
   }
@@ -48,7 +45,7 @@ class ComposeChatbotFlowTest {
 
   @Test
   void chatbotShowsNoAnswerWhenLiveComposeBackendHasNoAnswer() {
-    driver.get(FRONTEND_URL);
+    driver.get(SeleniumTestSupport.resolveFrontendTestUrl());
     waitForDocumentReady();
 
     click(By.cssSelector("[data-chatbot-toggle]"));

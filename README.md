@@ -23,144 +23,118 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 ```text
 .
 ├── frontend/              # GitHub Pages で公開するフロントエンド
-│   ├── index.html
-│   ├── orderConfirmation.html
-│   ├── orderConfirmed.html
-│   ├── orderhistory.html
-│   ├── css/
-│   └── js/
 ├── backend/               # Spring Boot バックエンド
-│   ├── Dockerfile
-│   ├── RENDER.md
-│   ├── pom.xml
-│   └── src/
 ├── docs/                  # 追加の静的ページ出力
 ├── render.yaml            # Render サービス定義
 └── index.html             # ルート用のエントリページ
 ```
 
-## リポジトリルール
+## README 更新ルール
 
-- `README.md` は日本語で記述します。
-- `README.md` を更新する場合は、いったん既存の `README.md` ファイルを削除してから、改めて日本語で作成してください。
-- `.gitignore` でバイナリファイルをコミット対象外にしています。
+- README は日本語で記述します。
+- 既存内容を保持し、必要な箇所だけを差分編集します。
+- 秘密情報は記載しません。
 
-## README.md 更新手順
+## 前提条件
 
-1. 現在の `README.md` を削除します。
-2. `README.md` を日本語で新規作成します。
-3. 変更内容を Git にコミットします。
+Xubuntu 上での開発・実行に必要な基本要件です。
 
-## 技術スタック
+- Bash
+- Git
+- Docker Engine
+- Docker Compose v2
+- 手動起動時のみ Java 21
+- Maven Wrapper を使用するため、ホストへの Maven インストールは原則不要
+- Selenium テスト実行時のみ Google Chrome または Chromium
 
-- フロントエンド: HTML、CSS、Vanilla JavaScript
-- バックエンド: Java 21、Spring Boot 3.3.5、Spring JDBC、Bean Validation
-- データベース: PostgreSQL
-- デプロイ: GitHub Pages、Render Docker Web Service
-
-## ローカル開発
-
-### 前提条件
-
-Docker を使う場合:
-
-- Docker Desktop または Docker Engine（Compose v2 対応）
-- Xubuntu では `docker.io` と `docker-compose-v2` パッケージを利用できます。
-
-手動で起動する場合:
-
-- Java 21
-- Maven
-- バックエンドから接続できる PostgreSQL
-- フロントエンド配信用の静的サーバー。例: VS Code Live Server、または JDK 21 付属の `jwebserver`
-
-Docker を使う場合は Java、Maven、PostgreSQL のホストインストールは不要です。
+Docker を Xubuntu へ導入する例です。
 
 ```bash
-docker --version
-docker compose version
+sudo apt update
+sudo apt install -y git curl ca-certificates docker.io docker-compose-v2 openjdk-21-jdk
+sudo systemctl enable --now docker
 ```
 
-### Docker Compose で起動する
+非 root で Docker を利用する場合は、次を実行してください。設定は再ログイン後に有効になります。
+
+```bash
+sudo usermod -aG docker "$USER"
+```
+
+動作確認コマンドは次の通りです。
+
+```bash
+bash --version
+git --version
+docker --version
+docker compose version
+java -version
+```
+
+Selenium テストを実行する場合は、ブラウザが利用可能であることを確認してください。
+
+```bash
+google-chrome --version
+# または
+chromium --version
+```
+
+## Docker Compose で起動する
 
 リポジトリルートで次を実行します。PostgreSQL、Spring Boot API、フロントエンド配信サーバーがまとめて起動します。
 
 ```bash
 cp .env.example .env
+# 必要な場合のみ .env の GEMINI_API_KEY 等を編集する
 docker compose up --build
 ```
 
-`.env` の `GEMINI_API_KEY` を設定するとチャットもローカルで利用できます。空欄のままでも注文機能とサイト表示は起動します。DB パスワードや MCP 内部トークンを変更する場合も `.env` を編集してください。
-
-ブラウザで `http://127.0.0.1:5500/frontend/` を開きます。API のヘルスチェックは `http://127.0.0.1:8080/api/health` です。
-
-チャットもローカルで使う場合は、起動前に Gemini API キーを環境変数へ設定してください。未設定でも注文機能とサイト表示は起動します。
+停止するには次を実行します。
 
 ```bash
-# bash/zsh
-export GEMINI_API_KEY="your_gemini_api_key"
-# PowerShell
-# $env:GEMINI_API_KEY = "your_gemini_api_key"
-docker compose up --build
+docker compose down
 ```
 
-停止するには `Ctrl+C` を押し、コンテナも削除する場合は `docker compose down` を実行します。注文データを含む PostgreSQL データも削除する場合は `docker compose down -v` を実行してください。
-
-### 手動でバックエンドを起動する
-
-リポジトリルートで、PostgreSQL 接続情報と MCP 内部設定を環境変数として設定します。
+PostgreSQL のローカルデータも削除する場合は、次を実行してください。
 
 ```bash
-# bash/zsh
-export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/shogun_sakura"
-export SPRING_DATASOURCE_USERNAME="shogun_sakura_user"
-export SPRING_DATASOURCE_PASSWORD="your_local_password"
-export MCP_INTERNAL_TOKEN="local-long-random-token"
-export SITE_SOURCE_BASE_URL="http://127.0.0.1:5500/frontend/"
-export ALLOWED_ORIGINS="http://localhost:5500,http://127.0.0.1:5500,null"
-# PowerShell
-# $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5432/shogun_sakura"
-# $env:SPRING_DATASOURCE_USERNAME = "shogun_sakura_user"
-# $env:SPRING_DATASOURCE_PASSWORD = "your_local_password"
-# $env:MCP_INTERNAL_TOKEN = "local-long-random-token"
-# $env:SITE_SOURCE_BASE_URL = "http://127.0.0.1:5500/frontend/"
-# $env:ALLOWED_ORIGINS = "http://localhost:5500,http://127.0.0.1:5500,null"
+docker compose down -v
 ```
 
-チャットを使う場合は `GEMINI_API_KEY` も設定してください。
+## 手動で起動する
 
-テストは `backend` ディレクトリで実行します。リポジトリルートでは POM が見つからないため、必ず `cd backend` してください。
+バックエンドは `backend` ディレクトリで Maven Wrapper を使って起動します。
 
 ```bash
 cd backend
-mvn clean test
+./mvnw clean test
+./mvnw spring-boot:run
 ```
 
-API を起動する場合は、テストとは別のターミナルで次を実行します。
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-デフォルトでは `http://localhost:8080` で起動します。ポートを変更する場合は `PORT` を設定してください。
-
-### フロントエンドの起動
-
-別のターミナルでリポジトリルートへ移動し、ルートを静的サーバーで配信します。
+フロントエンドは、リポジトリルートで Java 21 付属の静的サーバーを利用できます。
 
 ```bash
 jwebserver -p 5500
 ```
 
-ブラウザで `http://127.0.0.1:5500/frontend/` を開きます。VS Code Live Server を使う場合も、同じ URL 形式で `frontend/` を開いてください。
+## Selenium テスト
 
-`frontend/index.html` を `file://` で直接開いた場合も、デフォルトでは Render 上のバックエンド API を呼び出します。ローカルのバックエンドに向けたい場合は、ローカルサーバー経由で `frontend/` を開くか、ページのスクリプト読み込み前に `window.API_BASE_URL` を定義するか、対応ページの `body` に `data-api-base-url` を設定してください。
+Chrome または Chromium が必要です。Selenium Manager がドライバを取得または検出できるネットワーク・実行環境が必要です。ブラウザ実行ファイルを自動検出できない場合は `CHROME_BIN` を設定できます。
 
-```html
-<script>
-  window.API_BASE_URL = 'http://localhost:8080';
-</script>
+```bash
+export CHROME_BIN="$(command -v google-chrome || command -v chromium)"
+cd backend
+./mvnw test
+```
+
+Docker Compose 連携テストを実行する場合は、先に `docker compose up --build -d` を実行してください。
+
+## クリーンアップ
+
+生成物を削除するには次を実行します。
+
+```bash
+./scripts/clean-generated.sh
 ```
 
 ## API

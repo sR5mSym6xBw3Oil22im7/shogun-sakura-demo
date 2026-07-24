@@ -32,7 +32,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 class FrontendFlowTest {
 
-  private static final Path FRONTEND_DIR = Path.of("..", "frontend").normalize();
   private static final String TEST_HOST = "localhost";
   private static final Duration WAIT_TIMEOUT = Duration.ofSeconds(10);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
@@ -51,8 +50,9 @@ class FrontendFlowTest {
     apiServer = HttpServer.create(new InetSocketAddress(TEST_HOST, 0), 0);
     apiPort = apiServer.getAddress().getPort();
 
+    Path frontendDir = SeleniumTestSupport.resolveFrontendDir();
     frontendServer = HttpServer.create(new InetSocketAddress(TEST_HOST, 0), 0);
-    frontendServer.createContext("/", new StaticFrontendHandler(FRONTEND_DIR, apiPort));
+    frontendServer.createContext("/", new StaticFrontendHandler(frontendDir, apiPort));
     frontendPort = frontendServer.getAddress().getPort();
     frontendOrigin = "http://" + TEST_HOST + ":" + frontendPort;
 
@@ -62,10 +62,7 @@ class FrontendFlowTest {
     frontendServer.start();
     apiServer.start();
 
-    ChromeOptions options = new ChromeOptions();
-    options.addArguments("--headless=new");
-    options.addArguments("--window-size=1440,1200");
-
+    ChromeOptions options = SeleniumTestSupport.createChromeOptions();
     driver = new ChromeDriver(options);
     wait = new WebDriverWait(driver, WAIT_TIMEOUT);
   }
