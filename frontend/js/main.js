@@ -1,37 +1,36 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('[data-order-form]');
+document.addEventListener('DOMContentLoaded', function () {
+  var form = document.querySelector('[data-order-form]');
   if (!form) {
     return;
   }
 
-  const emailInput = form.querySelector('#email');
+  var emailInput = form.querySelector('#email');
   if (emailInput) {
-    const prefix = emailInput.dataset.emailPrefix || 'yamanda@demo';
-    emailInput.value = `${prefix}${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}.com`;
+    var prefix = emailInput.dataset.emailPrefix || 'yamanda@demo';
+    emailInput.value = prefix + leftPad(String(Math.floor(Math.random() * 10000)), 4, '0') + '.com';
   }
 
   setupClearOnFocusFields(form);
 
-  const submitButton = form.querySelector('[data-submit-button]');
-  const statusEl = form.querySelector('[data-form-status]');
-  const fieldErrorMap = new Map(
-    Array.from(form.querySelectorAll('[data-error-for]')).map((element) => [element.dataset.errorFor, element])
-  );
-  const quantityInput = form.querySelector('[data-quantity-input]');
-  const quantityWarningEl = form.querySelector('[data-quantity-warning]');
-  const apiBaseUrl = resolveApiBaseUrl();
+  var statusEl = form.querySelector('[data-form-status]');
+  var fieldErrorMap = {};
+  toArray(form.querySelectorAll('[data-error-for]')).forEach(function (element) {
+    fieldErrorMap[element.dataset.errorFor] = element;
+  });
+  var quantityInput = form.querySelector('[data-quantity-input]');
+  var quantityWarningEl = form.querySelector('[data-quantity-warning]');
 
   if (quantityInput) {
     setupQuantityRestrictions(quantityInput, quantityWarningEl);
   }
 
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', function (event) {
     event.preventDefault();
 
     clearFeedback(form, fieldErrorMap, statusEl);
 
-    const payload = readPayload(form);
-    const validation = validatePayload(payload);
+    var payload = readPayload(form);
+    var validation = validatePayload(payload);
 
     if (!validation.isValid) {
       applyFieldErrors(form, fieldErrorMap, validation.fieldErrors);
@@ -45,19 +44,14 @@
   });
 });
 
-function resolveApiBaseUrl() {
-  const raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
-  return raw.replace(/\/+$/, '');
-}
-
 function readPayload(form) {
-  const getValue = (name) => {
-    const element = form.elements.namedItem(name);
+  function getValue(name) {
+    var element = form.elements.namedItem(name);
     return element ? element.value.trim() : '';
-  };
+  }
 
-  const postalCode = getValue('postalCode');
-  const note = getValue('note');
+  var postalCode = getValue('postalCode');
+  var note = getValue('note');
 
   return {
     name: getValue('name'),
@@ -70,8 +64,15 @@ function readPayload(form) {
 }
 
 function validatePayload(payload) {
-  const fieldErrors = {};
-  const normalized = { ...payload };
+  var fieldErrors = {};
+  var normalized = {
+    name: payload.name,
+    email: payload.email,
+    postalCode: payload.postalCode,
+    address: payload.address,
+    quantity: payload.quantity,
+    note: payload.note,
+  };
 
   if (!normalized.name) {
     fieldErrors.name = 'Please enter your name.';
@@ -98,8 +99,8 @@ function validatePayload(payload) {
   if (normalized.quantity === '') {
     fieldErrors.quantity = 'Please enter the quantity.';
   } else {
-    const quantity = Number(normalized.quantity);
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 9) {
+    var quantity = Number(normalized.quantity);
+    if (!isInteger(quantity) || quantity < 1 || quantity > 9) {
       fieldErrors.quantity = 'Quantity must be between 1 and 9.';
     } else {
       normalized.quantity = quantity;
@@ -112,15 +113,17 @@ function validatePayload(payload) {
 
   return {
     isValid: Object.keys(fieldErrors).length === 0,
-    fieldErrors,
+    fieldErrors: fieldErrors,
     payload: normalized,
   };
 }
 
 function applyFieldErrors(form, fieldErrorMap, fieldErrors) {
-  Object.entries(fieldErrors).forEach(([name, message]) => {
-    const input = form.elements.namedItem(name);
-    const errorElement = fieldErrorMap.get(name);
+  Object.keys(fieldErrors).forEach(function (name) {
+    var message = fieldErrors[name];
+    var input = form.elements.namedItem(name);
+    var errorElement = fieldErrorMap[name];
+
     if (input) {
       input.setAttribute('aria-invalid', 'true');
     }
@@ -131,7 +134,7 @@ function applyFieldErrors(form, fieldErrorMap, fieldErrors) {
 }
 
 function clearFeedback(form, fieldErrorMap, statusEl) {
-  Array.from(form.elements).forEach((element) => {
+  toArray(form.elements).forEach(function (element) {
     if (
       element instanceof HTMLInputElement ||
       element instanceof HTMLTextAreaElement ||
@@ -141,8 +144,8 @@ function clearFeedback(form, fieldErrorMap, statusEl) {
     }
   });
 
-  fieldErrorMap.forEach((element) => {
-    element.textContent = '';
+  Object.keys(fieldErrorMap).forEach(function (name) {
+    fieldErrorMap[name].textContent = '';
   });
 
   setStatus(statusEl, '', '');
@@ -165,44 +168,27 @@ function setStatus(statusEl, message, tone) {
   }
 }
 
-function setLoadingState(button, isLoading) {
-  if (!button) {
-    return;
-  }
-
-  button.disabled = isLoading;
-  button.textContent = isLoading ? 'Sending...' : 'Place Order';
-}
-
 function focusFirstInvalidField(form, fieldErrors) {
-  const firstFieldName = Object.keys(fieldErrors)[0];
+  var firstFieldName = Object.keys(fieldErrors)[0];
   if (!firstFieldName) {
     return;
   }
 
-  const field = form.elements.namedItem(firstFieldName);
+  var field = form.elements.namedItem(firstFieldName);
   if (field && typeof field.focus === 'function') {
     field.focus();
   }
 }
 
-async function safeJson(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
 function setupClearOnFocusFields(form) {
-  const fields = form.querySelectorAll('[data-clear-on-focus="true"]');
+  var fields = form.querySelectorAll('[data-clear-on-focus="true"]');
 
-  fields.forEach((field) => {
-    const originalValue = field.value;
+  toArray(fields).forEach(function (field) {
+    var originalValue = field.value;
 
     field.dataset.originalValue = originalValue;
 
-    field.addEventListener('focus', () => {
+    field.addEventListener('focus', function () {
       if (field.value !== originalValue) {
         return;
       }
@@ -211,7 +197,7 @@ function setupClearOnFocusFields(form) {
       field.classList.remove('prefilled-value');
     });
 
-    field.addEventListener('blur', () => {
+    field.addEventListener('blur', function () {
       if (field.value.trim() !== '') {
         return;
       }
@@ -223,56 +209,51 @@ function setupClearOnFocusFields(form) {
 }
 
 function setupQuantityRestrictions(quantityInput, warningEl) {
-  let lastValidValue = quantityInput.value || '1';
-  let allowPointerChange = false;
-  let allowKeyboardChange = false;
+  var lastValidValue = quantityInput.value || '1';
+  var allowPointerChange = false;
+  var allowKeyboardChange = false;
+  var warningMessage = '数量は直接入力できません。矢印ボタンか上下の矢印キーで変更してください。';
 
-  const warningMessage = '数量は直接入力できません。矢印ボタンか上下の矢印キーで変更してください。';
-
-  const showWarning = () => {
+  function showWarning() {
     if (warningEl) {
       warningEl.textContent = warningMessage;
     }
-  };
+  }
 
-  const clearWarning = () => {
+  function clearWarning() {
     if (warningEl) {
       warningEl.textContent = '';
     }
-  };
+  }
 
-  const allowEdit = () => {
-    if (allowPointerChange || allowKeyboardChange) {
-      return true;
-    }
+  function allowEdit() {
+    return allowPointerChange || allowKeyboardChange;
+  }
 
-    return false;
-  };
-
-  const resetFlags = () => {
+  function resetFlags() {
     allowPointerChange = false;
     allowKeyboardChange = false;
-  };
+  }
 
-  quantityInput.addEventListener('pointerdown', () => {
+  quantityInput.addEventListener('pointerdown', function () {
     allowPointerChange = true;
   });
 
-  quantityInput.addEventListener('pointerup', () => {
+  quantityInput.addEventListener('pointerup', function () {
     allowPointerChange = false;
   });
 
-  quantityInput.addEventListener('pointercancel', () => {
+  quantityInput.addEventListener('pointercancel', function () {
     allowPointerChange = false;
   });
 
-  quantityInput.addEventListener('keydown', (event) => {
+  quantityInput.addEventListener('keydown', function (event) {
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       allowKeyboardChange = true;
       return;
     }
 
-    if (['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'Home', 'End', 'Enter'].includes(event.key)) {
+    if (containsKey(['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'Home', 'End', 'Enter'], event.key)) {
       return;
     }
 
@@ -280,7 +261,7 @@ function setupQuantityRestrictions(quantityInput, warningEl) {
     showWarning();
   });
 
-  quantityInput.addEventListener('beforeinput', (event) => {
+  quantityInput.addEventListener('beforeinput', function (event) {
     if (allowEdit()) {
       return;
     }
@@ -289,26 +270,26 @@ function setupQuantityRestrictions(quantityInput, warningEl) {
     showWarning();
   });
 
-  quantityInput.addEventListener('paste', (event) => {
+  quantityInput.addEventListener('paste', function (event) {
     event.preventDefault();
     showWarning();
   });
 
-  quantityInput.addEventListener('drop', (event) => {
+  quantityInput.addEventListener('drop', function (event) {
     event.preventDefault();
     showWarning();
   });
 
   quantityInput.addEventListener(
     'wheel',
-    (event) => {
+    function (event) {
       event.preventDefault();
       showWarning();
     },
-    { passive: false }
+    false
   );
 
-  quantityInput.addEventListener('input', () => {
+  quantityInput.addEventListener('input', function () {
     if (allowEdit()) {
       lastValidValue = quantityInput.value;
       clearWarning();
@@ -322,9 +303,35 @@ function setupQuantityRestrictions(quantityInput, warningEl) {
     showWarning();
   });
 
-  quantityInput.addEventListener('blur', () => {
+  quantityInput.addEventListener('blur', function () {
     quantityInput.value = lastValidValue;
     clearWarning();
     resetFlags();
   });
+}
+
+function toArray(list) {
+  return Array.prototype.slice.call(list);
+}
+
+function leftPad(value, length, fillChar) {
+  var padded = value;
+  while (padded.length < length) {
+    padded = fillChar + padded;
+  }
+  return padded;
+}
+
+function isInteger(value) {
+  return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+}
+
+function containsKey(values, target) {
+  var index;
+  for (index = 0; index < values.length; index += 1) {
+    if (values[index] === target) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -1,24 +1,25 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const root = document.querySelector('[data-chatbot]');
+document.addEventListener('DOMContentLoaded', function () {
+  var root = document.querySelector('[data-chatbot]');
   if (!root) {
     return;
   }
 
-  const toggle = root.querySelector('[data-chatbot-toggle]');
-  const closeButton = root.querySelector('[data-chatbot-close]');
-  const panel = root.querySelector('[data-chatbot-panel]');
-  const messages = root.querySelector('[data-chatbot-messages]');
-  const form = root.querySelector('[data-chatbot-form]');
-  const input = root.querySelector('[data-chatbot-input]');
-  const sendButton = root.querySelector('[data-chatbot-send]');
-  const status = root.querySelector('[data-chatbot-status]');
-  const count = root.querySelector('[data-chatbot-count]');
-  const apiBaseUrl = resolveChatApiBaseUrl();
-  let isSending = false;
-  let isOpen = false;
-  const fallbackAnswer = 'このサイト内に記載がないため、お答えできません。';
+  var toggle = root.querySelector('[data-chatbot-toggle]');
+  var closeButton = root.querySelector('[data-chatbot-close]');
+  var panel = root.querySelector('[data-chatbot-panel]');
+  var messages = root.querySelector('[data-chatbot-messages]');
+  var form = root.querySelector('[data-chatbot-form]');
+  var input = root.querySelector('[data-chatbot-input]');
+  var sendButton = root.querySelector('[data-chatbot-send]');
+  var status = root.querySelector('[data-chatbot-status]');
+  var count = root.querySelector('[data-chatbot-count]');
+  var apiBaseUrl = resolveChatApiBaseUrl();
+  var isSending = false;
+  var isOpen = false;
+  var fallbackAnswer = '応答なし';
+  var legacyUnanswerableMessage = 'このサイト内に記載がないため、お答えできません。';
 
-  const setOpen = (nextOpen) => {
+  function setOpen(nextOpen) {
     isOpen = nextOpen;
     panel.hidden = !isOpen;
     root.classList.toggle('is-open', isOpen);
@@ -29,42 +30,48 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       toggle.focus();
     }
-  };
+  }
 
-  toggle.addEventListener('click', () => {
+  toggle.addEventListener('click', function () {
     setOpen(!isOpen);
   });
 
-  closeButton?.addEventListener('click', () => {
-    setOpen(false);
-  });
+  if (closeButton) {
+    closeButton.addEventListener('click', function () {
+      setOpen(false);
+    });
+  }
 
-  document.addEventListener('pointerdown', (event) => {
+  document.addEventListener('pointerdown', function (event) {
     if (isOpen && !isSending && !root.contains(event.target)) {
       setOpen(false);
     }
   });
 
-  document.addEventListener('keydown', (event) => {
+  document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape' && isOpen) {
       setOpen(false);
     }
   });
 
-  input.addEventListener('input', () => {
+  input.addEventListener('input', function () {
     updateCount(input, count);
   });
 
-  input.addEventListener('keydown', (event) => {
+  input.addEventListener('keydown', function (event) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      form.requestSubmit();
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
     }
   });
 
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener('submit', function (event) {
     event.preventDefault();
-    const message = input.value.trim();
+    var message = input.value.trim();
 
     if (isSending || !message) {
       setStatus(status, message ? '' : '質問を入力してください。', 'error');
@@ -78,45 +85,63 @@ document.addEventListener('DOMContentLoaded', () => {
     input.value = '';
     updateCount(input, count);
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-      });
-      const data = await safeJson(response);
-      if (!response.ok) {
-        setStatus(status, data?.message || '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
+    requestJson(apiBaseUrl + '/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: message }),
+    })
+      .then(function (response) {
+        return safeJson(response).then(function (data) {
+          return {
+            response: response,
+            data: data,
+          };
+        });
+      })
+      .then(function (result) {
+        if (!result.response.ok) {
+          setStatus(
+            status,
+            result.data && result.data.message ? result.data.message : '回答できませんでした。しばらくしてからもう一度お試しください。',
+            'error'
+          );
+          input.value = message;
+          updateCount(input, count);
+          return;
+        }
+
+        appendMessage(messages, resolveAssistantAnswer(result.data, fallbackAnswer, legacyUnanswerableMessage), 'assistant');
+        setStatus(status, '', '');
+      })
+      .catch(function () {
+        setStatus(status, '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
         input.value = message;
         updateCount(input, count);
-        return;
-      }
-      appendMessage(messages, data?.answer || fallbackAnswer, 'assistant');
-      setStatus(status, '', '');
-    } catch {
-      setStatus(status, '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
-      input.value = message;
-      updateCount(input, count);
-    } finally {
-      isSending = false;
-      setLoading(sendButton, false);
-      input.focus();
-    }
+      })
+      .then(function () {
+        isSending = false;
+        setLoading(sendButton, false);
+        input.focus();
+      }, function () {
+        isSending = false;
+        setLoading(sendButton, false);
+        input.focus();
+      });
   });
 
   updateCount(input, count);
 });
 
 function resolveChatApiBaseUrl() {
-  const raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
+  var raw = window.API_BASE_URL || document.body.dataset.apiBaseUrl || 'https://shogun-sakura-demo.onrender.com';
   return raw.replace(/\/+$/, '');
 }
 
 function updateCount(input, count) {
   if (count) {
-    count.textContent = `${input.value.length} / ${input.maxLength}`;
+    count.textContent = input.value.length + ' / ' + input.maxLength;
   }
 }
 
@@ -140,17 +165,64 @@ function appendMessage(messages, message, sender) {
     return;
   }
 
-  const element = document.createElement('p');
-  element.className = `chatbot-message chatbot-message--${sender}`;
+  var element = document.createElement('p');
+  element.className = 'chatbot-message chatbot-message--' + sender;
   element.textContent = message;
   messages.appendChild(element);
   messages.scrollTop = messages.scrollHeight;
 }
 
-async function safeJson(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
+function resolveAssistantAnswer(data, fallbackAnswer, legacyUnanswerableMessage) {
+  var answer = data && typeof data.answer === 'string' ? data.answer.trim() : '';
+  if (!answer || answer === legacyUnanswerableMessage) {
+    return fallbackAnswer;
   }
+  return answer;
+}
+
+function safeJson(response) {
+  return response.json().catch(function () {
+    return null;
+  });
+}
+
+function requestJson(url, options) {
+  if (typeof window.fetch === 'function') {
+    return window.fetch(url, options);
+  }
+
+  return new Promise(function (resolve, reject) {
+    var request = new XMLHttpRequest();
+    var requestHeaders = options && options.headers ? options.headers : {};
+    var method = options && options.method ? options.method : 'GET';
+    request.open(method, url, true);
+
+    Object.keys(requestHeaders).forEach(function (name) {
+      request.setRequestHeader(name, requestHeaders[name]);
+    });
+
+    request.onload = function () {
+      resolve(buildXhrResponse(request));
+    };
+    request.onerror = function () {
+      reject(new Error('Network request failed.'));
+    };
+    request.send(options && options.body ? options.body : null);
+  });
+}
+
+function buildXhrResponse(request) {
+  return {
+    ok: request.status >= 200 && request.status < 300,
+    status: request.status,
+    json: function () {
+      return new Promise(function (resolve, reject) {
+        try {
+          resolve(request.responseText ? JSON.parse(request.responseText) : null);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+  };
 }

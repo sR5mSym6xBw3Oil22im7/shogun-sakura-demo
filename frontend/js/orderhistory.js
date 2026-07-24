@@ -1,58 +1,67 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
-  const historyBody = document.querySelector('[data-history-body]');
-  const statusEl = document.querySelector('[data-history-status]');
+document.addEventListener('DOMContentLoaded', function () {
+  var historyBody = document.querySelector('[data-history-body]');
+  var statusEl = document.querySelector('[data-history-status]');
   if (!historyBody || !statusEl) {
     return;
   }
 
-  const apiBaseUrl = resolveApiBaseUrl();
+  var apiBaseUrl = resolveApiBaseUrl();
   loadOrderHistory(apiBaseUrl, historyBody, statusEl);
 });
 
-async function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
+function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
   setStatus(statusEl, '注文履歴を取得しています…', 'pending');
+  requestJson(apiBaseUrl + '/api/orders', {
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+    .then(function (response) {
+      return safeJson(response).then(function (data) {
+        return {
+          response: response,
+          data: data,
+        };
+      });
+    })
+    .then(function (result) {
+      if (!result.response.ok) {
+        var message = result.data && result.data.message ? result.data.message : '注文履歴を取得できませんでした。';
+        setStatus(statusEl, message, 'error');
+        renderEmptyRow(historyBody, message);
+        return;
+      }
 
-  try {
-    const response = await fetch(`${apiBaseUrl}/api/orders`, {
-      headers: {
-        Accept: 'application/json',
-      },
+      var items = Array.isArray(result.data) ? result.data : [];
+      renderHistoryRows(historyBody, items);
+      setStatus(
+        statusEl,
+        items.length > 0 ? items.length + ' 件の注文履歴を表示しています。' : '注文履歴はまだありません。',
+        'success'
+      );
+    })
+    .catch(function () {
+      var fallbackMessage = '注文履歴を取得できませんでした。';
+      setStatus(statusEl, fallbackMessage, 'error');
+      renderEmptyRow(historyBody, fallbackMessage);
     });
-
-    const data = await safeJson(response);
-
-    if (!response.ok) {
-      const message = data?.message || '注文履歴を取得できませんでした。';
-      setStatus(statusEl, message, 'error');
-      renderEmptyRow(historyBody, message);
-      return;
-    }
-
-    const items = Array.isArray(data) ? data : [];
-    renderHistoryRows(historyBody, items);
-    setStatus(statusEl, items.length > 0 ? `${items.length} 件の注文履歴を表示しています。` : '注文履歴はまだありません。', 'success');
-  } catch {
-    const message = '注文履歴を取得できませんでした。';
-    setStatus(statusEl, message, 'error');
-    renderEmptyRow(historyBody, message);
-  }
 }
 
 function renderHistoryRows(historyBody, items) {
-  historyBody.replaceChildren();
+  clearChildren(historyBody);
 
   if (items.length === 0) {
     renderEmptyRow(historyBody, '注文履歴はまだありません。');
     return;
   }
 
-  const formatter = new Intl.DateTimeFormat('ja-JP', {
+  var formatter = new Intl.DateTimeFormat('ja-JP', {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
 
-  items.forEach((item) => {
-    const row = document.createElement('tr');
+  items.forEach(function (item) {
+    var row = document.createElement('tr');
 
     appendCell(row, item.orderId);
     appendCell(row, item.productName || '');
@@ -61,10 +70,10 @@ function renderHistoryRows(historyBody, items) {
     appendCell(row, item.postalCode || '');
     appendCell(row, item.address || '');
     appendCell(row, item.quantity);
-    appendCell(row, `¥${Number(item.totalAmount || 0).toLocaleString('ja-JP')}`);
+    appendCell(row, '¥' + Number(item.totalAmount || 0).toLocaleString('ja-JP'));
     appendCell(row, item.note || '');
 
-    const createdAtText = item.createdAt ? formatter.format(new Date(item.createdAt)) : '';
+    var createdAtText = item.createdAt ? formatter.format(new Date(item.createdAt)) : '';
     appendCell(row, createdAtText);
 
     historyBody.appendChild(row);
@@ -72,9 +81,9 @@ function renderHistoryRows(historyBody, items) {
 }
 
 function renderEmptyRow(historyBody, message) {
-  historyBody.replaceChildren();
-  const row = document.createElement('tr');
-  const cell = document.createElement('td');
+  clearChildren(historyBody);
+  var row = document.createElement('tr');
+  var cell = document.createElement('td');
   cell.colSpan = 10;
   cell.className = 'history-empty';
   cell.textContent = message;
@@ -83,13 +92,19 @@ function renderEmptyRow(historyBody, message) {
 }
 
 function appendCell(row, value) {
-  const cell = document.createElement('td');
+  var cell = document.createElement('td');
   cell.textContent = value == null ? '' : String(value);
   row.appendChild(cell);
 }
 
+function clearChildren(element) {
+  while (element.firstChild) {
+    element.removeChild(element.firstChild);
+  }
+}
+
 function resolveApiBaseUrl() {
-  const raw = window.API_BASE_URL || 'https://shogun-sakura-demo.onrender.com';
+  var raw = window.API_BASE_URL || 'https://shogun-sakura-demo.onrender.com';
   return raw.replace(/\/+$/, '');
 }
 
@@ -106,10 +121,49 @@ function setStatus(statusEl, message, tone) {
   }
 }
 
-async function safeJson(response) {
-  try {
-    return await response.json();
-  } catch {
+function safeJson(response) {
+  return response.json().catch(function () {
     return null;
+  });
+}
+
+function requestJson(url, options) {
+  if (typeof window.fetch === 'function') {
+    return window.fetch(url, options);
   }
+
+  return new Promise(function (resolve, reject) {
+    var request = new XMLHttpRequest();
+    var requestHeaders = options && options.headers ? options.headers : {};
+    var method = options && options.method ? options.method : 'GET';
+    request.open(method, url, true);
+
+    Object.keys(requestHeaders).forEach(function (name) {
+      request.setRequestHeader(name, requestHeaders[name]);
+    });
+
+    request.onload = function () {
+      resolve(buildXhrResponse(request));
+    };
+    request.onerror = function () {
+      reject(new Error('Network request failed.'));
+    };
+    request.send(options && options.body ? options.body : null);
+  });
+}
+
+function buildXhrResponse(request) {
+  return {
+    ok: request.status >= 200 && request.status < 300,
+    status: request.status,
+    json: function () {
+      return new Promise(function (resolve, reject) {
+        try {
+          resolve(request.responseText ? JSON.parse(request.responseText) : null);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+  };
 }
