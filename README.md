@@ -2,6 +2,8 @@
 
 SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは静的 HTML/CSS/JavaScript で構成され、バックエンドは Spring Boot REST API を使って注文受付、注文履歴、AI チャット機能を提供します。
 
+このリポジトリでは、商品紹介、注文確認、注文完了、注文履歴の各画面を提供しています。システム構成図ページは現在含まれていません。
+
 ## 公開 URL
 
 - フロントエンド: `https://sr5msym6xbw3oil22im7.github.io/shogun-sakura-demo/frontend/`
@@ -17,6 +19,13 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 - Spring Boot による REST API と入力バリデーション
 - Render Web Service 内の H2 インメモリ DB への注文データ保存
 - GitHub Pages / ローカル開発向けの CORS 設定
+
+## 画面一覧
+
+- `frontend/index.html`: 商品紹介と注文入力
+- `frontend/orderConfirmation.html`: 注文内容の確認
+- `frontend/orderConfirmed.html`: 注文完了
+- `frontend/orderhistory.html`: 注文履歴一覧
 
 ## ディレクトリ構成
 
