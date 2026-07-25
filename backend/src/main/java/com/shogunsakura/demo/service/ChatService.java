@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ public class ChatService {
     this(geminiClient, mcpClient, null);
   }
 
+  @Autowired
   public ChatService(GeminiGenerateContentClient geminiClient, SiteKnowledgeMcpClient mcpClient,
       SiteContentService siteContentService) {
     this.geminiClient = geminiClient;
