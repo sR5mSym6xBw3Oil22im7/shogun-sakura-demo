@@ -25,7 +25,6 @@ public class SiteContentService {
       "",
       "index.html",
       "orderhistory.html",
-      "system_diagrams.html",
       "orderConfirmation.html",
       "orderConfirmed.html"
   );
