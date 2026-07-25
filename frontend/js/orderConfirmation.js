@@ -55,6 +55,13 @@ document.addEventListener('DOMContentLoaded', function () {
             errorMessage = result.data.message;
           }
 
+          if (!result.response.ok && result.data && result.data.fieldErrors && Object.keys(result.data.fieldErrors).length > 0) {
+            var fieldMessages = Object.values(result.data.fieldErrors).filter(Boolean);
+            if (fieldMessages.length > 0) {
+              errorMessage = fieldMessages.join(' ');
+            }
+          }
+
           setStatus(statusEl, errorMessage, 'error');
           button.disabled = false;
           button.textContent = originalButtonText;

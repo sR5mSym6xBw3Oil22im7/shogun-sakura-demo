@@ -35,7 +35,11 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
+    String message = ex.getMessage();
+    if (!org.springframework.util.StringUtils.hasText(message)) {
+      message = "Something went wrong.";
+    }
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new ErrorResponse("Something went wrong.", Map.of()));
+        .body(new ErrorResponse(message, Map.of()));
   }
 }
