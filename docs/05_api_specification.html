@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="API仕様書"><title>API仕様書 | SHOGUN SAKURA</title><link rel="stylesheet" href="assets/style.css"></head><body id="top"><header class="site-header"><div class="header-inner">
+<a class="brand" href="index.html"><span class="brand-mark">桜</span><span><span class="brand-title">SHOGUN SAKURA</span><span class="brand-sub">AI案内機能付きデモサイト</span></span></a>
+<nav class="header-nav" aria-label="納品ドキュメント"><a href="index.html">総合案内</a><a href="01_system_overview.html">システム概要</a><a href="02_user_manual.html">利用者向け操作マニュアル</a><a href="03_admin_operation.html">管理</a><a href="04_deployment_setup.html">環境構築</a><a href="05_api_specification.html" aria-current="page">API仕様書</a><a href="06_test_report.html">検証結果</a><a href="07_maintenance_handover.html">保守</a><a href="08_release_notes.html">リリースノート</a></nav>
+</div></header><section class="hero"><div class="hero-inner"><p class="eyebrow">API REFERENCE</p><h1>API仕様書</h1><p class="hero-lead">公開REST APIと内部MCPエンドポイントの入出力、入力制約、応答コードを定義します。</p><div class="meta-row"><span class="meta-chip">文書番号 SS-DOC-05</span><span class="meta-chip">REST / JSON</span></div></div></section><div class="page-shell"><aside class="sidebar"><nav class="side-card" aria-label="ページ内目次"><p class="side-title">Contents</p><a href="#common">共通仕様</a><a href="#health">ヘルスチェック</a><a href="#create">注文登録</a><a href="#list">注文履歴</a><a href="#chatapi">AIチャット</a><a href="#mcp">内部MCP</a><a href="#status">ステータスコード</a></nav></aside><main class="content"><section class="section" id="common"><span class="section-label">Common</span><h2>共通仕様</h2><div class="kv"><div class="key">Base URL</div><div>本番：<code>https://shogun-sakura-demo.onrender.com</code><br>ローカル：<code>http://localhost:8080</code></div><div class="key">Content-Type</div><div><code>application/json</code></div><div class="key">文字コード</div><div>UTF-8</div><div class="key">時刻</div><div>ISO 8601形式、Asia/Tokyo</div><div class="key">公開API認証</div><div>なし（デモ仕様）</div></div><h3>共通エラー形式</h3><div class="code-block"><pre>{
+  "message": "Invalid request.",
+  "fieldErrors": {
+    "name": "お名前を入力してください。"
+  }
+}</pre></div></section><section class="section" id="health"><span class="section-label">GET /api/health</span><h2>稼働状態取得</h2><p>アプリケーションがリクエストを処理できる状態か確認します。</p><div class="table-wrap"><table><thead><tr><th>項目</th><th>内容</th></tr></thead><tbody><tr><td>Method</td><td>GET</td></tr><tr><td>Path</td><td><code>/api/health</code></td></tr><tr><td>成功</td><td>200 OK</td></tr></tbody></table></div><div class="code-block"><pre>{ "status": "ok" }</pre></div></section><section class="section" id="create"><span class="section-label">POST /api/orders</span><h2>注文登録</h2><p>注文デモの架空データをH2メモリDBへ保存します。単価は4,800円で固定され、合計金額は数量からサーバー側で算出します。</p><h3>リクエスト</h3><div class="code-block"><pre>{
+  "name": "テスト太郎",
+  "email": "test@example.com",
+  "postalCode": "100-0001",
+  "address": "東京都千代田区1-1",
+  "quantity": 2,
+  "note": "demo order"
+}</pre></div><div class="table-wrap"><table><thead><tr><th>項目</th><th>必須</th><th>制約</th></tr></thead><tbody><tr><td>name</td><td>必須</td><td>空白不可、50文字以内</td></tr><tr><td>email</td><td>必須</td><td>メール形式、100文字以内</td></tr><tr><td>postalCode</td><td>任意</td><td>数字とハイフン、8文字以内</td></tr><tr><td>address</td><td>必須</td><td>空白不可、200文字以内</td></tr><tr><td>quantity</td><td>必須</td><td>1～9の整数</td></tr><tr><td>note</td><td>任意</td><td>200文字以内</td></tr></tbody></table></div><h3>成功レスポンス：201 Created</h3><div class="code-block"><pre>{
+  "orderId": 1,
+  "message": "注文を受け付けました。",
+  "createdAt": "2026-07-26T12:00:00+09:00"
+}</pre></div></section><section class="section" id="list"><span class="section-label">GET /api/orders</span><h2>注文履歴取得</h2><p>現在のバックエンドプロセス内に保存されている注文を、注文IDの昇順で返します。</p><div class="code-block"><pre>[
+  {
+    "orderId": 1,
+    "productName": "SHOGUN SAKURA SET",
+    "customerName": "テスト太郎",
+    "email": "test@example.com",
+    "postalCode": "100-0001",
+    "address": "東京都千代田区1-1",
+    "quantity": 2,
+    "totalAmount": 9600,
+    "note": "demo order",
+    "createdAt": "2026-07-26T12:00:00+09:00"
+  }
+]</pre></div><div class="notice warning"><strong>デモ仕様：</strong>認証なしで一覧取得できます。本番環境へ転用する場合は管理者認証とアクセス制御が必須です。</div></section><section class="section" id="chatapi"><span class="section-label">POST /api/chat</span><h2>AIチャット</h2><p>質問を受け取り、許可ページ本文を根拠とする短い日本語回答を返します。会話履歴はDBへ保存しません。</p><h3>リクエスト</h3><div class="code-block"><pre>{ "message": "セットの価格はいくらですか？" }</pre></div><p><code>message</code> は必須、空白不可、500文字以内です。</p><h3>成功レスポンス：200 OK</h3><div class="code-block"><pre>{ "answer": "桜の押し花と将軍の扇セットは、税込のデモ価格で4,800円です。" }</pre></div><h3>根拠がない場合</h3><div class="code-block"><pre>{ "answer": "このサイト内に記載がないため、お答えできません。" }</pre></div></section><section class="section" id="mcp"><span class="section-label">POST /mcp</span><h2>内部MCP</h2><p>サイト本文取得ツール <code>get_site_content</code> を提供する内部エンドポイントです。フロントエンドから直接呼び出しません。</p><div class="table-wrap"><table><thead><tr><th>項目</th><th>仕様</th></tr></thead><tbody><tr><td>認証ヘッダー</td><td><code>X-MCP-Internal-Token</code></td></tr><tr><td>GET</td><td>405 Method Not Allowed</td></tr><tr><td>トークン不正</td><td>401 Unauthorized</td></tr><tr><td>許可外Origin</td><td>403 Forbidden</td></tr><tr><td>ツール名</td><td><code>get_site_content</code></td></tr></tbody></table></div><p>取得対象はトップ、注文履歴、注文確認、注文完了の固定許可ページです。1ページ最大5,000文字、合計最大18,000文字、キャッシュは5分です。</p></section><section class="section" id="status"><span class="section-label">HTTP Status</span><h2>ステータスコード</h2><div class="table-wrap"><table><thead><tr><th>コード</th><th>意味</th><th>主なケース</th></tr></thead><tbody><tr><td>200</td><td>成功</td><td>取得、AI回答</td></tr><tr><td>201</td><td>作成成功</td><td>注文登録</td></tr><tr><td>400</td><td>不正リクエスト</td><td>入力検証エラー、JSON不正</td></tr><tr><td>401</td><td>認証失敗</td><td>内部MCPトークン不正</td></tr><tr><td>403</td><td>許可拒否</td><td>内部MCPのOrigin不正</td></tr><tr><td>405</td><td>Method不許可</td><td>MCPへのGET</td></tr><tr><td>500</td><td>サーバーエラー</td><td>予期しない内部例外</td></tr></tbody></table></div></section></main></div><footer class="footer"><div class="footer-inner"><span>SHOGUN SAKURA AI案内機能付きデモサイト / 納品ドキュメント v1.0</span><a class="top-link" href="#top">ページ先頭へ戻る</a></div></footer><script src="assets/app.js"></script></body></html>
