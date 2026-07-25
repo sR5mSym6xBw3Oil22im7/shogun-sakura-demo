@@ -24,7 +24,9 @@
         <p class="sub">注文履歴</p>
         <h1>注文履歴一覧表示</h1>
         <p>
-          Render の Web Service が受領した注文データを、 PostgreSQL の <code>orders</code> テーブルから一覧表示します。
+          Render の Web Service が受領した注文データを、同一 JVM 内の H2 インメモリ DB にある
+          <code>orders</code> テーブルから一覧表示します。
+          再起動や再デプロイ後は履歴が初期化されます。
         </p>
         <a class="btn" href="./index.html">トップへ戻る</a>
       </div>

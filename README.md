@@ -15,7 +15,7 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 - 注文履歴画面で保存済み注文の一覧表示
 - サイト本文に基づく AI チャット回答
 - Spring Boot による REST API と入力バリデーション
-- PostgreSQL への注文データ保存
+- Render Web Service 内の H2 インメモリ DB への注文データ保存
 - GitHub Pages / ローカル開発向けの CORS 設定
 
 ## ディレクトリ構成
@@ -73,7 +73,7 @@ chromium --version
 
 ## Docker Compose で起動する
 
-リポジトリルートで次を実行します。PostgreSQL、Spring Boot API、フロントエンド配信サーバーがまとめて起動します。
+リポジトリルートで次を実行します。Spring Boot API とフロントエンド配信サーバーがまとめて起動します。
 
 ```bash
 cp .env.example .env
@@ -87,10 +87,10 @@ docker compose up --build
 docker compose down
 ```
 
-PostgreSQL のローカルデータも削除する場合は:
+H2 の注文データはプロセス終了で消えます。コンテナを停止するだけで十分です。
 
 ```bash
-docker compose down -v
+docker compose down
 ```
 
 ## 手動で起動する
@@ -197,7 +197,7 @@ docker compose up --build -d
 
 ### `GET /api/orders`
 
-保存済みの注文一覧を返します。
+保存済みの注文一覧を返します。同一デプロイ中のみ保持され、再起動や再デプロイで消えます。
 
 ```json
 [

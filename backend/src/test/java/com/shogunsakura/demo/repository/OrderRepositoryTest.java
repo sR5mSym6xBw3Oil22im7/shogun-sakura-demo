@@ -1,45 +1,43 @@
 package com.shogunsakura.demo.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import com.shogunsakura.demo.config.DataSourceConfig;
+import com.shogunsakura.demo.dto.OrderHistoryResponse;
 import com.shogunsakura.demo.model.OrderReceipt;
-import java.sql.ResultSet;
-import java.time.OffsetDateTime;
+import com.zaxxer.hikari.HikariDataSource;
+import java.util.List;
+import javax.sql.DataSource;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.mockito.ArgumentCaptor;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
-@ExtendWith(MockitoExtension.class)
 class OrderRepositoryTest {
 
-  @Mock
-  JdbcTemplate jdbcTemplate;
+  private HikariDataSource dataSource;
+  private JdbcTemplate jdbcTemplate;
+
+  @BeforeEach
+  void setUp() {
+    DataSourceConfig config = new DataSourceConfig();
+    dataSource = (HikariDataSource) config.dataSource();
+    jdbcTemplate = new JdbcTemplate(dataSource);
+    new ResourceDatabasePopulator(new ClassPathResource("schema.sql")).execute(dataSource);
+    jdbcTemplate.execute("DELETE FROM orders");
+  }
+
+  @AfterEach
+  void tearDown() {
+    dataSource.close();
+  }
 
   @Test
-  void saveMapsInsertedOrderToReceipt() throws Exception {
-    OffsetDateTime createdAt = OffsetDateTime.parse("2026-07-08T12:34:56+09:00");
-
-    when(jdbcTemplate.queryForObject(anyString(), any(RowMapper.class), any(Object[].class)))
-        .thenAnswer(invocation -> {
-          @SuppressWarnings("unchecked")
-          RowMapper<OrderReceipt> rowMapper = invocation.getArgument(1);
-          ResultSet resultSet = mock(ResultSet.class);
-          when(resultSet.getLong("id")).thenReturn(101L);
-          when(resultSet.getObject("created_at", OffsetDateTime.class)).thenReturn(createdAt);
-          return rowMapper.mapRow(resultSet, 0);
-        });
-
+  void saveInsertsOrderAndReturnsGeneratedReceipt() {
     OrderRepository repository = new OrderRepository(jdbcTemplate);
+
     OrderReceipt receipt = repository.save(
         "SAKURA_SHOGUN_SET",
         "SHOGUN SAKURA Demo Set",
@@ -52,27 +50,51 @@ class OrderRepositoryTest {
         9600,
         "Demo order");
 
-    assertThat(receipt.id()).isEqualTo(101L);
-    assertThat(receipt.createdAt()).isEqualTo(createdAt);
+    assertThat(receipt.id()).isGreaterThanOrEqualTo(1L);
+    assertThat(receipt.createdAt()).isNotNull();
 
-    ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
-    verify(jdbcTemplate).queryForObject(
-        sqlCaptor.capture(),
-        any(RowMapper.class),
-        eq("SAKURA_SHOGUN_SET"),
-        eq("SHOGUN SAKURA Demo Set"),
-        eq("Taro Yamada"),
-        eq("taro@example.com"),
-        eq("100-0001"),
-        eq("Tokyo 1-1-1"),
-        eq(2),
-        eq(4800),
-        eq(9600),
-        eq("Demo order"));
+    List<OrderHistoryResponse> history = new OrderHistoryRepository(jdbcTemplate).findAll();
+    assertThat(history).hasSize(1);
+    assertThat(history.getFirst().customerName()).isEqualTo("Taro Yamada");
+    assertThat(history.getFirst().email()).isEqualTo("taro@example.com");
+    assertThat(history.getFirst().quantity()).isEqualTo(2);
+    assertThat(history.getFirst().totalAmount()).isEqualTo(9600);
+  }
 
-    assertThat(sqlCaptor.getValue())
-        .contains("WITH sequence_reset AS")
-        .contains("NOT EXISTS (SELECT 1 FROM orders)")
-        .contains("setval(pg_get_serial_sequence('orders', 'id'), 1, false)");
+  @Test
+  void findAllReturnsRowsInIdAscendingOrder() {
+    OrderRepository repository = new OrderRepository(jdbcTemplate);
+
+    repository.save(
+        "SAKURA_SHOGUN_SET",
+        "SHOGUN SAKURA Demo Set",
+        "First Customer",
+        "first@example.com",
+        "100-0001",
+        "Tokyo 1-1-1",
+        1,
+        4800,
+        4800,
+        "First order");
+    repository.save(
+        "SAKURA_SHOGUN_SET",
+        "SHOGUN SAKURA Demo Set",
+        "Second Customer",
+        "second@example.com",
+        "100-0002",
+        "Tokyo 2-2-2",
+        3,
+        4800,
+        14400,
+        "Second order");
+
+    List<OrderHistoryResponse> history = new OrderHistoryRepository(jdbcTemplate).findAll();
+    assertThat(history).hasSize(2);
+    assertThat(history).extracting(OrderHistoryResponse::customerName)
+        .containsExactly("First Customer", "Second Customer");
+    assertThat(history).extracting(OrderHistoryResponse::email)
+        .containsExactly("first@example.com", "second@example.com");
+    assertThat(history).extracting(OrderHistoryResponse::quantity)
+        .containsExactly(1, 3);
   }
 }

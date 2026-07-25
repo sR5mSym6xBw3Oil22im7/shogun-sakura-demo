@@ -1,18 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: shogun_sakura
-      POSTGRES_USER: shogun_sakura_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_password}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "shogun_sakura_user", "-d", "shogun_sakura"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
   frontend:
     image: nginx:1.27-alpine
     volumes:
@@ -25,21 +11,13 @@ services:
       context: ./backend
     environment:
       PORT: 8080
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/shogun_sakura
-      SPRING_DATASOURCE_USERNAME: shogun_sakura_user
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-local_password}
       MCP_INTERNAL_TOKEN: ${MCP_INTERNAL_TOKEN:?MCP_INTERNAL_TOKEN is required}
       MCP_BASE_URL: ${MCP_BASE_URL:?MCP_BASE_URL is required}
       SITE_SOURCE_BASE_URL: http://frontend/frontend/
       ALLOWED_ORIGINS: http://localhost:5500,http://127.0.0.1:5500,null
       GEMINI_API_KEY: ${GEMINI_API_KEY:?GEMINI_API_KEY is required}
     depends_on:
-      db:
-        condition: service_healthy
       frontend:
         condition: service_started
     ports:
       - "8080:8080"
-
-volumes:
-  postgres-data:

@@ -1,42 +1,60 @@
 package com.shogunsakura.demo.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.shogunsakura.demo.config.DataSourceConfig;
 import com.shogunsakura.demo.dto.OrderHistoryResponse;
-import java.time.OffsetDateTime;
+import com.zaxxer.hikari.HikariDataSource;
 import java.util.List;
-import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 class OrderHistoryRepositoryTest {
 
+  private HikariDataSource dataSource;
+  private JdbcTemplate jdbcTemplate;
+
+  @BeforeEach
+  void setUp() {
+    DataSourceConfig config = new DataSourceConfig();
+    dataSource = (HikariDataSource) config.dataSource();
+    jdbcTemplate = new JdbcTemplate(dataSource);
+    new ResourceDatabasePopulator(new ClassPathResource("schema.sql")).execute(dataSource);
+    jdbcTemplate.execute("DELETE FROM orders");
+  }
+
+  @AfterEach
+  void tearDown() {
+    dataSource.close();
+  }
+
   @Test
   void findAllMapsRowsToHistoryResponses() {
-    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
-    when(jdbcTemplate.queryForList(anyString())).thenReturn(List.of(Map.of(
-        "id", 3L,
-        "product_name", "Test Product",
-        "customer_name", "Taro Yamada",
-        "email", "test@example.com",
-        "postal_code", "100-0001",
-        "address", "Tokyo 1-1-1",
-        "quantity", 2,
-        "total_amount", 9600,
-        "note", "First order",
-        "created_at", OffsetDateTime.parse("2026-07-09T20:59:18.246321+09:00")
-    )));
+    new OrderRepository(jdbcTemplate).save(
+        "SAKURA_SHOGUN_SET",
+        "SHOGUN SAKURA Demo Set",
+        "Taro Yamada",
+        "test@example.com",
+        "100-0001",
+        "Tokyo 1-1-1",
+        2,
+        4800,
+        9600,
+        "First order");
 
     OrderHistoryRepository repository = new OrderHistoryRepository(jdbcTemplate);
     List<OrderHistoryResponse> items = repository.findAll();
 
     assertThat(items).hasSize(1);
-    assertThat(items.getFirst().orderId()).isEqualTo(3L);
-    assertThat(items.getFirst().productName()).isEqualTo("Test Product");
+    assertThat(items.getFirst().orderId()).isGreaterThanOrEqualTo(1L);
+    assertThat(items.getFirst().productName()).isEqualTo("SHOGUN SAKURA Demo Set");
     assertThat(items.getFirst().customerName()).isEqualTo("Taro Yamada");
+    assertThat(items.getFirst().email()).isEqualTo("test@example.com");
+    assertThat(items.getFirst().quantity()).isEqualTo(2);
     assertThat(items.getFirst().totalAmount()).isEqualTo(9600);
   }
 }

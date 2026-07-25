@@ -2,10 +2,11 @@ package com.shogunsakura.demo.repository;
 
 import com.shogunsakura.demo.model.OrderReceipt;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.OffsetDateTime;
+import java.util.Objects;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -63,21 +64,17 @@ public class OrderRepository {
       return ps;
     }, keyHolder);
 
-    Long id = null;
-    if (!keyHolder.getKeyList().isEmpty()) {
-      Object generatedKey = keyHolder.getKeyList().get(0).get("id");
-      if (generatedKey instanceof Number number) {
-        id = number.longValue();
-      }
-    }
-    if (id == null) {
+    Map<String, Object> generatedKeys = keyHolder.getKeys();
+    Object generatedId = generatedKeys == null ? null : generatedKeys.get("id");
+    if (!(generatedId instanceof Number number)) {
       throw new IllegalStateException("Failed to retrieve generated order id.");
     }
+    long id = number.longValue();
 
     OffsetDateTime createdAt = jdbcTemplate.queryForObject(
         "SELECT created_at FROM orders WHERE id = ?",
         (rs, rowNum) -> rs.getObject("created_at", OffsetDateTime.class),
         id);
-    return new OrderReceipt(id, createdAt);
+    return new OrderReceipt(id, Objects.requireNonNull(createdAt, "created_at is required"));
   }
 }

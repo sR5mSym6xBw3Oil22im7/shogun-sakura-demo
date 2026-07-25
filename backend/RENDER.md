@@ -26,10 +26,6 @@ Use the following values in the Render dashboard so the build succeeds without e
 
 Set these values in the Render dashboard instead of committing them to the repository.
 
-- `PORT` (Render usually injects this automatically; do not set it manually unless needed)
-- `SPRING_DATASOURCE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
 - `GEMINI_API_KEY`
 - `MCP_INTERNAL_TOKEN`
 - `MCP_BASE_URL`
@@ -37,10 +33,9 @@ Set these values in the Render dashboard instead of committing them to the repos
 
 ### Variable guidance
 
-- `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD` are used directly to connect to PostgreSQL.
 - `GEMINI_API_KEY` is required for the AI chat feature.
 - `MCP_INTERNAL_TOKEN` and `MCP_BASE_URL` are required for the internal MCP integration used by the chat workflow.
-- `ALLOWED_ORIGINS` should include the public frontend origin and any localhost origins you need for testing.
+- `ALLOWED_ORIGINS` should be `https://sr5msym6xbw3oil22im7.github.io` in production.
 
 ## Build notes
 
@@ -51,6 +46,6 @@ Set these values in the Render dashboard instead of committing them to the repos
 ## Deployment notes
 
 - The frontend sends order requests to this backend API.
-- Order data is stored in the Render-managed PostgreSQL database.
+- Order data is stored temporarily in the Render Web Service's H2 in-memory database.
 - When an order is accepted, the API returns an order completion message and order ID to the frontend.
-- Keep secrets and database credentials in the Render service settings; do not store them in the repository.
+- Keep secrets in the Render service settings; do not store them in the repository.
