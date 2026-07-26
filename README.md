@@ -1,6 +1,6 @@
 # SHOGUN SAKURA
 
-SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは静的 HTML/CSS/JavaScript で構成され、バックエンドは Spring Boot REST API を使って注文受付、注文履歴、AI チャット機能を提供します。
+SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは静的 HTML/CSS/JavaScript で構成され、バックエンドは Spring Boot REST API で注文受付、注文履歴、AI チャット機能を提供します。
 
 このリポジトリでは、商品紹介、注文確認、注文完了、注文履歴の各画面を提供しています。システム構成図ページは現在含まれていません。
 
@@ -96,11 +96,7 @@ docker compose up --build
 docker compose down
 ```
 
-H2 の注文データはプロセス終了で消えます。コンテナを停止するだけで十分です。
-
-```bash
-docker compose down
-```
+H2 の注文データはプロセス終了で消えます。保存データの退避は不要で、停止だけで十分です。
 
 ## 手動で起動する
 
@@ -200,7 +196,7 @@ docker compose up --build -d
 {
   "orderId": 1,
   "message": "注文を受け付けました。",
-  "createdAt": "2026-07-21T12:00:00+09:00"
+  "createdAt": "2026-07-26T12:00:00+09:00"
 }
 ```
 
@@ -220,7 +216,7 @@ docker compose up --build -d
     "quantity": 2,
     "totalAmount": 9600,
     "note": "demo order",
-    "createdAt": "2026-07-21T12:00:00+09:00"
+    "createdAt": "2026-07-26T12:00:00+09:00"
   }
 ]
 ```
