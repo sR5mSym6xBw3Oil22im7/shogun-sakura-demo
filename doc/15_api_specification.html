@@ -1,0 +1,35 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="SHOGUN SAKURA API仕様書"><title>API仕様書 | SHOGUN SAKURA</title><link rel="stylesheet" href="css/style.css"></head><body><header class="site-header"><div class="header-inner"><div><div class="brand">SHOGUN SAKURA / DEVELOPMENT DOCUMENT</div><h1>API仕様書</h1></div><div class="doc-meta">工程：基本設計<br>版数：1.0<br>作成日：2026-06-28<br>状態：確定</div></div></header><div class="layout"><nav class="sidebar"><h2>文書一覧</h2><a href="index.html">文書目次</a><div class="phase">企画</div><a href="01_project_overview.html">01. プロジェクト概要書</a><a href="02_technology_selection.html">02. 技術選定書</a><div class="phase">要件定義</div><a href="03_requirements_definition.html">03. 要件定義書</a><a href="04_function_list.html">04. 機能一覧表</a><a href="05_nonfunctional_requirements.html">05. 非機能要件定義書</a><a href="06_scope.html">06. 対象範囲・対象外一覧</a><div class="phase">基本設計</div><a href="07_screen_list.html">07. 画面一覧表</a><a href="08_screen_transition.html">08. 画面遷移図</a><a href="09_screen_design.html">09. 画面設計書</a><a href="10_screen_item_definition.html">10. 画面項目定義書</a><a href="11_input_validation.html">11. 入力チェック仕様書</a><a href="12_system_architecture.html">12. システム構成図</a><div class="phase">基本設計／実装</div><a href="13_frontend_design.html">13. フロントエンド基本設計書</a><a href="14_backend_design.html">14. バックエンド基本設計書</a><div class="phase">基本設計</div><a href="15_api_specification.html" class="current">15. API仕様書</a><a href="16_database_design.html">16. データベース設計書</a><div class="phase">基本設計／実装</div><a href="17_ai_chat_specification.html">17. AIチャット機能仕様書</a><div class="phase">基本設計</div><a href="18_external_integration.html">18. 外部サービス連携仕様書</a><a href="19_security_design.html">19. セキュリティ設計書</a><div class="phase">詳細設計</div><a href="20_error_message_list.html">20. エラー処理・メッセージ一覧</a><div class="phase">環境設計</div><a href="21_environment_configuration.html">21. 環境構成書</a><a href="22_environment_variables.html">22. 環境変数一覧</a><a href="23_deployment_design.html">23. デプロイ設計書</a><div class="phase">テスト</div><a href="24_test_plan.html">24. テスト計画書</a><a href="25_test_cases.html">25. テスト仕様書・テストケース一覧</a><a href="26_test_result_report.html">26. テスト結果報告書</a><div class="phase">リリース</div><a href="27_release_procedure.html">27. リリース手順書</a><div class="phase">運用</div><a href="28_data_retention_policy.html">28. データ保持方針書</a><div class="phase">開発者向け</div><a href="29_readme.html">29. README</a><div class="phase">ポートフォリオ</div><a href="30_portfolio_description.html">30. ポートフォリオ説明資料</a></nav><main class="main"><article class="document">
+<section><h2>1. API一覧</h2><div class="table-wrap"><table class=""><thead><tr><th>ID</th><th>Method</th><th>Path</th><th>Request</th><th>Success</th><th>Response</th><th>用途</th></tr></thead><tbody><tr><td>API-01</td><td>GET</td><td>/api/health</td><td>なし</td><td>200</td><td>{"status":"ok"}</td><td>稼働監視</td></tr><tr><td>API-02</td><td>POST</td><td>/api/orders</td><td>CreateOrderRequest</td><td>201</td><td>OrderResponse</td><td>デモ注文登録</td></tr><tr><td>API-03</td><td>GET</td><td>/api/orders</td><td>なし</td><td>200</td><td>OrderHistoryResponse[]</td><td>注文履歴取得</td></tr><tr><td>API-04</td><td>POST</td><td>/api/chat</td><td>ChatRequest</td><td>200</td><td>ChatResponse</td><td>AI案内</td></tr><tr><td>INT-01</td><td>POST等</td><td>/mcp</td><td>MCP JSON-RPC</td><td>200</td><td>MCPツール結果</td><td>内部通信専用</td></tr></tbody></table></div></section>
+<section><h2>2. POST /api/orders</h2><h3>リクエスト</h3><pre><code>{
+  &quot;name&quot;: &quot;テスト氏名12345678&quot;,
+  &quot;email&quot;: &quot;abcd1234@efgh5678.ijkl9012&quot;,
+  &quot;postalCode&quot;: &quot;100-0001&quot;,
+  &quot;address&quot;: &quot;テスト住所12345678&quot;,
+  &quot;quantity&quot;: 2,
+  &quot;note&quot;: &quot;テスト備考12345678&quot;
+}</code></pre><h3>成功レスポンス：201 Created</h3><pre><code>{
+  &quot;orderId&quot;: 1,
+  &quot;message&quot;: &quot;注文を受け付けました。&quot;,
+  &quot;createdAt&quot;: &quot;2026-07-23T12:00:00+09:00&quot;
+}</code></pre></section>
+<section><h2>3. GET /api/orders</h2><h3>成功レスポンス：200 OK</h3><pre><code>[
+  {
+    &quot;orderId&quot;: 1,
+    &quot;productName&quot;: &quot;SHOGUN SAKURA SET&quot;,
+    &quot;customerName&quot;: &quot;テスト氏名12345678&quot;,
+    &quot;email&quot;: &quot;abcd1234@efgh5678.ijkl9012&quot;,
+    &quot;postalCode&quot;: &quot;100-0001&quot;,
+    &quot;address&quot;: &quot;テスト住所12345678&quot;,
+    &quot;quantity&quot;: 2,
+    &quot;totalAmount&quot;: 9600,
+    &quot;note&quot;: &quot;テスト備考12345678&quot;,
+    &quot;createdAt&quot;: &quot;2026-07-23T12:00:00+09:00&quot;
+  }
+]</code></pre></section>
+<section><h2>4. POST /api/chat</h2><h3>リクエスト</h3><pre><code>{&quot;message&quot;:&quot;セットの価格はいくらですか？&quot;}</code></pre><h3>成功レスポンス：200 OK</h3><pre><code>{&quot;answer&quot;:&quot;税込のデモ価格で4,800円です。&quot;}</code></pre><p>サイト本文に根拠がない場合のサーバー応答は「このサイト内に記載がないため、お答えできません。」とする。フロントエンドではこの文言を「応答なし」として表示する。</p></section>
+<section><h2>5. エラーレスポンス</h2><pre><code>{
+  &quot;message&quot;: &quot;Invalid request.&quot;,
+  &quot;fieldErrors&quot;: {
+    &quot;email&quot;: &quot;正しいメールアドレス形式で入力してください。&quot;
+  }
+}</code></pre> <div class="table-wrap"><table class=""><thead><tr><th>HTTP</th><th>条件</th></tr></thead><tbody><tr><td>400 Bad Request</td><td>Bean Validation違反、JSON読取不能、型不一致。</td></tr><tr><td>401 Unauthorized</td><td>MCP内部トークンなし・不一致。</td></tr><tr><td>403 Forbidden</td><td>MCPへ許可外Originからアクセス。</td></tr><tr><td>405 Method Not Allowed</td><td>MCPへGETアクセス。</td></tr><tr><td>500 Internal Server Error</td><td>予期しないサーバー例外。</td></tr></tbody></table></div></section><div class="nav-links"><a href="14_backend_design.html">← バックエンド基本設計書</a><a href="16_database_design.html">データベース設計書 →</a></div></article></main></div><footer class="footer">SHOGUN SAKURA 開発文書 / Version 1.0</footer></body></html>
