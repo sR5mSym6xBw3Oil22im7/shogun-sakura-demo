@@ -28,6 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
     button.disabled = true;
     button.textContent = '処理中...';
     setStatus(statusEl, '注文を送信しています...', 'pending');
+
+    // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+    var waitTimer = setTimeout(function () {
+      setStatus(statusEl, 'まもなく注文を進めます。少々お待ちください。', 'pending');
+    }, 30000);
+
     requestJson(apiBaseUrl + '/api/orders', {
       method: 'POST',
       headers: {
@@ -36,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
       body: JSON.stringify(confirmationData),
     })
       .then(function (response) {
+        clearTimeout(waitTimer);
         return safeJson(response).then(function (data) {
           return {
             response: response,
@@ -74,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = 'orderConfirmed.html';
       })
       .catch(function () {
+        clearTimeout(waitTimer);
         button.disabled = false;
         button.textContent = originalButtonText;
         unlockConfirmationUi(lockTargets);

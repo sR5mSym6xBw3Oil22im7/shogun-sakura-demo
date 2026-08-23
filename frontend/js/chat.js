@@ -85,6 +85,11 @@ document.addEventListener('DOMContentLoaded', function () {
     input.value = '';
     updateCount(input, count);
 
+    // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+    var waitTimer = setTimeout(function () {
+      setStatus(status, 'まもなく返信が届きます。少々お待ちください。', '');
+    }, 30000);
+
     requestJson(apiBaseUrl + '/api/chat', {
       method: 'POST',
       headers: {
@@ -101,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
       })
       .then(function (result) {
+        clearTimeout(waitTimer);
         if (!result.response.ok) {
           setStatus(
             status,
@@ -116,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setStatus(status, '', '');
       })
       .catch(function () {
+        clearTimeout(waitTimer);
         setStatus(status, '回答できませんでした。しばらくしてからもう一度お試しください。', 'error');
         input.value = message;
         updateCount(input, count);

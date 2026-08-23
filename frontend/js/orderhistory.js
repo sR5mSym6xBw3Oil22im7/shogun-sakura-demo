@@ -11,12 +11,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
   setStatus(statusEl, '注文履歴を取得しています…', 'pending');
+
+  // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+  var waitTimer = setTimeout(function () {
+    setStatus(statusEl, 'まもなく注文履歴を表示します。少々お待ちください。', 'pending');
+  }, 30000);
+
   requestJson(apiBaseUrl + '/api/orders', {
     headers: {
       Accept: 'application/json',
     },
   })
     .then(function (response) {
+      clearTimeout(waitTimer);
       return safeJson(response).then(function (data) {
         return {
           response: response,
@@ -41,6 +48,7 @@ function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
       );
     })
     .catch(function () {
+      clearTimeout(waitTimer);
       var fallbackMessage = '注文履歴を取得できませんでした。';
       setStatus(statusEl, fallbackMessage, 'error');
       renderEmptyRow(historyBody, fallbackMessage);
