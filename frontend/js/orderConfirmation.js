@@ -1,3 +1,5 @@
+var SLOW_RESPONSE_MESSAGE = '一定時間アクセスがない場合は起動に時間がかかり、応答が遅くなることがあります。';
+
 document.addEventListener('DOMContentLoaded', function () {
   if (!window.sessionStorage.getItem('pendingOrderQuantity')) {
     window.location.replace('index.html');
@@ -29,10 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
     button.textContent = '処理中...';
     setStatus(statusEl, '注文を送信しています...', 'pending');
 
-    // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+    // 5秒経過してもバックエンドから反応がない場合は起動遅延を案内する
     var waitTimer = setTimeout(function () {
-      setStatus(statusEl, 'まもなく注文を進めます。少々お待ちください。', 'pending');
-    }, 30000);
+      setStatus(statusEl, SLOW_RESPONSE_MESSAGE, 'pending');
+    }, 5000);
 
     requestJson(apiBaseUrl + '/api/orders', {
       method: 'POST',

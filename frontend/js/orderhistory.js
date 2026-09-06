@@ -1,3 +1,5 @@
+var SLOW_RESPONSE_MESSAGE = '一定時間アクセスがない場合は起動に時間がかかり、応答が遅くなることがあります。';
+
 document.addEventListener('DOMContentLoaded', function () {
   var historyBody = document.querySelector('[data-history-body]');
   var statusEl = document.querySelector('[data-history-status]');
@@ -12,10 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function loadOrderHistory(apiBaseUrl, historyBody, statusEl) {
   setStatus(statusEl, '注文履歴を取得しています…', 'pending');
 
-  // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+  // 5秒経過してもバックエンドから反応がない場合は起動遅延を案内する
   var waitTimer = setTimeout(function () {
-    setStatus(statusEl, 'まもなく注文履歴を表示します。少々お待ちください。', 'pending');
-  }, 30000);
+    setStatus(statusEl, SLOW_RESPONSE_MESSAGE, 'pending');
+  }, 5000);
 
   requestJson(apiBaseUrl + '/api/orders', {
     headers: {

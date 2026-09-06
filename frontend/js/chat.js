@@ -1,3 +1,5 @@
+var SLOW_RESPONSE_MESSAGE = '一定時間アクセスがない場合は起動に時間がかかり、応答が遅くなることがあります。';
+
 document.addEventListener('DOMContentLoaded', function () {
   var root = document.querySelector('[data-chatbot]');
   if (!root) {
@@ -85,10 +87,10 @@ document.addEventListener('DOMContentLoaded', function () {
     input.value = '';
     updateCount(input, count);
 
-    // 30秒後にバックオフィスから返事がない場合は前向きな一言メッセージを表示する
+    // 5秒経過してもバックエンドから反応がない場合は起動遅延を案内する
     var waitTimer = setTimeout(function () {
-      setStatus(status, 'まもなく返信が届きます。少々お待ちください。', '');
-    }, 30000);
+      setStatus(status, SLOW_RESPONSE_MESSAGE, '');
+    }, 5000);
 
     requestJson(apiBaseUrl + '/api/chat', {
       method: 'POST',
