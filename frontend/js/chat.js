@@ -1,4 +1,4 @@
-var SLOW_RESPONSE_MESSAGE = '一定時間アクセスがない場合は起動に時間がかかり、応答が遅くなることがあります。';
+var SLOW_RESPONSE_MESSAGE = '一定時間アクセスがない場合はバックエンドの起動に時間がかかり、応答が遅くなることがあります。';
 
 document.addEventListener('DOMContentLoaded', function () {
   var root = document.querySelector('[data-chatbot]');
