@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="注文履歴一覧表示">
+  <title>注文履歴一覧表示 | SHOGUN SAKURA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="history-page">
+  <header class="topbar">
+    <div class="brand">SHOGUN SAKURA</div>
+    <div class="header-right">
+      <nav class="global-nav" aria-label="ページ移動">
+        <a href="./index.html">トップへ戻る</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero history-hero history-hero--compact">
+      <div class="copy">
+        <p class="sub">注文履歴</p>
+        <h1>注文履歴一覧表示</h1>
+        <p>
+          Render の Web Service が受領した注文データを、同一 JVM 内の H2 インメモリ DB にある
+          <code>orders</code> テーブルから一覧表示します。
+          再起動や再デプロイ後は履歴が初期化されます。
+        </p>
+        <a class="btn" href="./index.html">トップへ戻る</a>
+      </div>
+    </section>
+
+    <section class="purchase history-section" id="history">
+      <div class="purchase-card">
+        <p class="sub">注文一覧</p>
+        <h2>注文履歴一覧</h2>
+        <p>注文ID、氏名、数量、合計金額、登録日時を一覧で確認できます。</p>
+
+        <div class="history-status" data-history-status aria-live="polite"></div>
+        <div class="history-table-shell">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>注文ID</th>
+                <th>商品名</th>
+                <th>氏名</th>
+                <th>メール</th>
+                <th>郵便番号</th>
+                <th>住所</th>
+                <th>数量</th>
+                <th>合計金額</th>
+                <th>備考</th>
+                <th>登録日時</th>
+              </tr>
+            </thead>
+            <tbody data-history-body></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>SHOGUN SAKURA</footer>
+
+  <script>
+    // 画面と API はバックエンド（Spring Boot）から同一オリジンで配信する。
+    // file:// で直接開いた場合のみローカルのバックエンド（8080）を利用する。
+    window.API_BASE_URL = location.protocol === 'file:'
+      ? 'http://localhost:8080'
+      : location.origin;
+  </script>
+  <script src="js/orderhistory.js"></script>
+</body>
+</html>
