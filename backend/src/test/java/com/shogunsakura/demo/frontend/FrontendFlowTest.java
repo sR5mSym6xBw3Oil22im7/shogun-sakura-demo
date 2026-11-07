@@ -36,31 +36,26 @@ class FrontendFlowTest {
   private static final Duration WAIT_TIMEOUT = Duration.ofSeconds(10);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
 
-  private HttpServer frontendServer;
-  private HttpServer apiServer;
-  private int frontendPort;
-  private int apiPort;
-  private String frontendOrigin;
+  // 本番と同様に、画面と API を同一オリジン（1 つのサーバー）で配信する。
+  private HttpServer server;
+  private int serverPort;
+  private String serverOrigin;
   private WebDriver driver;
   private WebDriverWait wait;
   private final List<JsonNode> orderRequests = new CopyOnWriteArrayList<>();
 
   @BeforeEach
   void setUp() throws Exception {
-    apiServer = HttpServer.create(new InetSocketAddress(TEST_HOST, 0), 0);
-    apiPort = apiServer.getAddress().getPort();
+    Path staticDir = SeleniumTestSupport.resolveFrontendDir();
+    server = HttpServer.create(new InetSocketAddress(TEST_HOST, 0), 0);
+    serverPort = server.getAddress().getPort();
+    serverOrigin = "http://" + TEST_HOST + ":" + serverPort;
 
-    Path frontendDir = SeleniumTestSupport.resolveFrontendDir();
-    frontendServer = HttpServer.create(new InetSocketAddress(TEST_HOST, 0), 0);
-    frontendServer.createContext("/", new StaticFrontendHandler(frontendDir, apiPort));
-    frontendPort = frontendServer.getAddress().getPort();
-    frontendOrigin = "http://" + TEST_HOST + ":" + frontendPort;
+    server.createContext("/", new StaticFrontendHandler(staticDir));
+    server.createContext("/api/orders", new OrderApiHandler(orderRequests, serverOrigin));
+    server.createContext("/api/chat", new ChatApiHandler(serverOrigin));
 
-    apiServer.createContext("/api/orders", new OrderApiHandler(orderRequests, frontendOrigin));
-    apiServer.createContext("/api/chat", new ChatApiHandler(frontendOrigin));
-
-    frontendServer.start();
-    apiServer.start();
+    server.start();
 
     ChromeOptions options = SeleniumTestSupport.createChromeOptions();
     driver = new ChromeDriver(options);
@@ -72,18 +67,15 @@ class FrontendFlowTest {
     if (driver != null) {
       driver.quit();
     }
-    if (frontendServer != null) {
-      frontendServer.stop(0);
-    }
-    if (apiServer != null) {
-      apiServer.stop(0);
+    if (server != null) {
+      server.stop(0);
     }
     orderRequests.clear();
   }
 
   @Test
   void purchaseFormShowsValidationErrorsForInvalidEmail() {
-    openPage("/frontend/index.html");
+    openPage("/index.html");
 
     WebElement emailInput = driver.findElement(By.id("email"));
     emailInput.clear();
@@ -94,23 +86,23 @@ class FrontendFlowTest {
 
     wait.until(
         ExpectedConditions.textToBe(By.cssSelector("[data-error-for='email']"), "Please enter a valid email address."));
-    assertThat(driver.getCurrentUrl()).endsWith("/frontend/index.html");
+    assertThat(driver.getCurrentUrl()).endsWith("/index.html");
     assertThat(text("[data-error-for='email']")).isEqualTo("Please enter a valid email address.");
     assertThat(text("[data-form-status]")).isEqualTo("Please check the form fields.");
   }
 
   @Test
   void purchaseFlowNavigatesToConfirmationAndCompletionPages() {
-    openPage("/frontend/index.html");
+    openPage("/index.html");
     WebElement form = driver.findElement(By.cssSelector("[data-order-form]"));
     ((JavascriptExecutor) driver).executeScript("arguments[0].requestSubmit();", form);
 
-    wait.until(ExpectedConditions.urlContains("/frontend/orderConfirmation.html"));
+    wait.until(ExpectedConditions.urlContains("/orderConfirmation.html"));
     assertThat(driver.getPageSource()).contains("注文確認");
 
     click(By.cssSelector("[data-confirm-order-button]"));
 
-    wait.until(ExpectedConditions.urlContains("/frontend/orderConfirmed.html"));
+    wait.until(ExpectedConditions.urlContains("/orderConfirmed.html"));
     assertThat(driver.getPageSource()).contains("ご注文ありがとうございます");
     assertThat(orderRequests).hasSize(1);
 
@@ -164,7 +156,7 @@ class FrontendFlowTest {
 
   @Test
   void orderHistoryPageRendersFetchedOrders() {
-    openPage("/frontend/orderhistory.html");
+    openPage("/orderhistory.html");
 
     wait.until(ExpectedConditions.textToBe(By.cssSelector("[data-history-status]"), "2 件の注文履歴を表示しています。"));
 
@@ -179,7 +171,7 @@ class FrontendFlowTest {
 
   @Test
   void chatbotSendsQuestionAndAppendsAnswer() {
-    openPage("/frontend/index.html");
+    openPage("/index.html");
 
     click(By.cssSelector("[data-chatbot-toggle]"));
     WebElement input = driver.findElement(By.cssSelector("[data-chatbot-input]"));
@@ -196,7 +188,7 @@ class FrontendFlowTest {
   }
 
   private void openPage(String path) {
-    driver.get("http://" + TEST_HOST + ":" + frontendPort + path);
+    driver.get(serverOrigin + path);
     waitForDocumentReady();
   }
 
@@ -221,11 +213,9 @@ class FrontendFlowTest {
   private static final class StaticFrontendHandler implements HttpHandler {
 
     private final Path root;
-    private final int apiPort;
 
-    private StaticFrontendHandler(Path root, int apiPort) {
+    private StaticFrontendHandler(Path root) {
       this.root = root;
-      this.apiPort = apiPort;
     }
 
     @Override
@@ -234,25 +224,20 @@ class FrontendFlowTest {
       String rawPath = uri.getPath();
       String relativePath = rawPath.startsWith("/") ? rawPath.substring(1) : rawPath;
       if (relativePath.isBlank()) {
-        relativePath = "frontend/index.html";
+        relativePath = "index.html";
       }
 
-      Path target = root.getParent().resolve(relativePath).normalize();
+      Path target = root.resolve(relativePath).normalize();
       if (Files.isDirectory(target)) {
         target = target.resolve("index.html");
       }
 
-      if (!target.startsWith(root.getParent()) || !Files.exists(target)) {
+      if (!target.startsWith(root) || !Files.exists(target)) {
         sendResponse(exchange, 404, "Not Found", "text/plain; charset=UTF-8");
         return;
       }
 
       byte[] body = Files.readAllBytes(target);
-      if (target.getFileName().toString().endsWith(".html")) {
-        String html = new String(body, StandardCharsets.UTF_8)
-            .replace("http://localhost:8080", "http://localhost:" + apiPort);
-        body = html.getBytes(StandardCharsets.UTF_8);
-      }
       sendResponse(exchange, 200, body, detectContentType(target));
     }
 

@@ -20,7 +20,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SiteContentService {
 
-  static final String DEFAULT_BASE_URL = "https://sr5msym6xbw3oil22im7.github.io/shogun-sakura-demo/frontend/";
+  /**
+   * 画面はバックエンド自身が静的リソースとして配信するため、既定では自プロセスから取得する。
+   * 外部サイトを経由しないため、チャット回答時のサイト本文取得が速くなる。
+   */
+  static final String DEFAULT_BASE_URL = "http://127.0.0.1:${server.port:8080}/";
   static final List<String> ALLOWED_PAGE_SUFFIXES = List.of(
       "",
       "index.html",

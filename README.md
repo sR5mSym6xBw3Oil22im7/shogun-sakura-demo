@@ -1,13 +1,15 @@
 # SHOGUN SAKURA
 
-SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。フロントエンドは静的 HTML/CSS/JavaScript で構成され、バックエンドは Spring Boot REST API で注文受付、注文履歴、AI チャット機能を提供します。
+SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。画面は静的 HTML/CSS/JavaScript で構成され、Spring Boot バックエンドが画面と REST API（注文受付、注文履歴、AI チャット）を同一オリジンで配信します。
+
+以前は GitHub Pages で画面を配信していましたが、AI チャットの応答性を改善するため、画面をバックエンドへ移行しました。旧 URL（GitHub Pages の `frontend/`）にアクセスすると、バックエンドのトップページへ自動で遷移します。
 
 このリポジトリでは、商品紹介、注文確認、注文完了、注文履歴の各画面を提供しています。システム構成図ページは現在含まれていません。
 
 ## 公開 URL
 
-- フロントエンド: `https://sr5msym6xbw3oil22im7.github.io/shogun-sakura-demo/frontend/`
-- バックエンド: `https://shogun-sakura-demo.onrender.com/`
+- サイト（画面・API）: `https://shogun-sakura-demo.onrender.com/`
+- 旧フロントエンド URL: `https://sr5msym6xbw3oil22im7.github.io/shogun-sakura-demo/frontend/`（上記サイトへ自動遷移）
 - ヘルスチェック: `https://shogun-sakura-demo.onrender.com/api/health`
 
 ## 主な機能
@@ -18,24 +20,26 @@ SHOGUN SAKURA は、ポートフォリオ向けのデモ EC サイトです。�
 - サイト本文に基づく AI チャット回答
 - Spring Boot による REST API と入力バリデーション
 - Render Web Service 内の H2 インメモリ DB への注文データ保存
-- GitHub Pages / ローカル開発向けの CORS 設定
+- 画面と API の同一オリジン配信（`file://` でのローカル確認向けに CORS 設定を維持）
 
 ## 画面一覧
 
-- `frontend/index.html`: 商品紹介と注文入力
-- `frontend/orderConfirmation.html`: 注文内容の確認
-- `frontend/orderConfirmed.html`: 注文完了
-- `frontend/orderhistory.html`: 注文履歴一覧
+画面ファイルは `backend/src/main/resources/static/` に配置しています。
+
+- `/`（`index.html`）: 商品紹介と注文入力
+- `/orderConfirmation.html`: 注文内容の確認
+- `/orderConfirmed.html`: 注文完了
+- `/orderhistory.html`: 注文履歴一覧
 
 ## ディレクトリ構成
 
 ```text
 .
-├── frontend/              # 静的フロントエンド
-├── backend/               # Spring Boot バックエンド
-├── docs/                  # 追加の静的ページ
+├── backend/               # Spring Boot バックエンド（画面は src/main/resources/static/）
+├── frontend/              # 旧 URL 用の遷移ページ（index.html のみ）
+├── doc/                   # 開発文書
 ├── render.yaml            # Render 用サービス定義
-└── index.html             # ルート用エントリページ
+└── index.html             # ルート用エントリページ（バックエンドへ遷移）
 ```
 
 ## 前提条件
@@ -82,7 +86,7 @@ chromium --version
 
 ## Docker Compose で起動する
 
-リポジトリルートで次を実行します。Spring Boot API とフロントエンド配信サーバーがまとめて起動します。
+リポジトリルートで次を実行します。Spring Boot が画面と API をまとめて配信します。起動後、`http://localhost:8080/` を開いてください。
 
 ```bash
 cp .env.example .env
@@ -117,18 +121,10 @@ cd backend
 ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
 ```
 
-`frontend/index.html` の `window.API_BASE_URL` は、ローカルで `file://` から開いた場合に `http://localhost:8080` になるように設定されています。
+起動後、ブラウザで `http://localhost:8080/` を開くと画面が表示されます。画面は API を同一オリジン（`location.origin`）で呼び出します。
 
-- バックエンドを `8080` で起動すると、`frontend/index.html` とそのまま連携します。
-- それ以外のポートで起動する場合は、`frontend/index.html` の `API_BASE_URL` を変更するか、静的サーバーを使って開いてください。
-
-### フロントエンド
-
-Java 21 の静的サーバーを使う例:
-
-```bash
-jwebserver -p 5500
-```
+- 画面ファイル（`backend/src/main/resources/static/*.html`）を `file://` で直接開いた場合は、`http://localhost:8080` の API を呼び出します。
+- 別ポートで起動した場合は、そのポート（例: `http://localhost:8081/`）を開けば画面と API が連携します。
 
 ## Selenium テスト
 
@@ -140,10 +136,18 @@ cd backend
 ./mvnw test
 ```
 
-Docker Compose 連携テストを実行する場合は、先に:
+Docker Compose 連携テスト（`ComposeChatbotFlowTest`）は `http://localhost:8080/` に到達できる場合のみ実行されます。実行する場合は、先に:
 
 ```bash
 docker compose up --build -d
+```
+
+`orderSubmissionUsesLocalApiWhenPageIsOpenedFromFileUrl` も `localhost:8080` で起動中のバックエンドを必要とします。
+
+画面設定の Node テスト:
+
+```bash
+node --test backend/src/test/js/localBackendConfig.test.js
 ```
 
 ## クリーンアップ
@@ -223,7 +227,7 @@ docker compose up --build -d
 
 ### `POST /api/chat`
 
-AI チャット回答を返します。フロントエンドはこの API のみを呼び出します。
+AI チャット回答を返します。画面はこの API のみを呼び出します。
 
 ```json
 {
@@ -252,9 +256,11 @@ AI チャット回答を返します。フロントエンドはこの API のみ
 
 ### 内部 MCP
 
-`/mcp` はバックエンド内部で AI チャット用のサイト本文取得に使う内部エンドポイントです。フロントエンドから直接呼び出しません。
+`/mcp` はバックエンド内部で AI チャット用のサイト本文取得に使う内部エンドポイントです。画面から直接呼び出しません。サイト本文は既定で自プロセスが配信する画面（`http://127.0.0.1:${server.port}/`）から取得し、`SITE_SOURCE_BASE_URL` で上書きできます。
 
 ## ローカル開発の補足
 
+- 通常は `http://localhost:8080/` から画面を開いてください（同一オリジンのため CORS 設定は不要です）。
 - `file://` で直接ファイルを開くとブラウザの Origin は `null` になります。公開環境では `null` を許可しないでください。
 - `file://` でテストする場合もバックエンドが先に起動している必要があります。
+- Render の `ALLOWED_ORIGINS` は `https://shogun-sakura-demo.onrender.com` を設定します。

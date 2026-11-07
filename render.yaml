@@ -10,7 +10,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
-        value: https://sr5msym6xbw3oil22im7.github.io
+        value: https://shogun-sakura-demo.onrender.com
       - key: MCP_INTERNAL_TOKEN
         sync: false
       - key: MCP_BASE_URL

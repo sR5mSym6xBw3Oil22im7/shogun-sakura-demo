@@ -1,5 +1,7 @@
 server:
   port: ${PORT:8080}
+  # Render などのリバースプロキシ経由でも同一オリジン判定（https）が正しく行われるようにする
+  forward-headers-strategy: framework
 
 spring:
   sql:

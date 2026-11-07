@@ -9,6 +9,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 final class SeleniumTestSupport {
 
+  /** 画面（HTML/CSS/JS/画像）はバックエンドの静的リソースとして配信する。 */
+  private static final Path STATIC_DIR = Path.of("src", "main", "resources", "static");
+
   private SeleniumTestSupport() {
   }
 
@@ -32,8 +35,8 @@ final class SeleniumTestSupport {
 
     Path cwd = Path.of(".").toAbsolutePath().normalize();
     for (Path candidate : List.of(
-        cwd.resolve("frontend"),
-        cwd.getParent().resolve("frontend"))) {
+        cwd.resolve(STATIC_DIR),
+        cwd.resolve("backend").resolve(STATIC_DIR))) {
       if (isFrontendDirectory(candidate)) {
         return candidate.toAbsolutePath().normalize();
       }
@@ -41,13 +44,9 @@ final class SeleniumTestSupport {
 
     Path projectDir = findProjectDirectory(cwd);
     if (projectDir != null) {
-      Path candidate = projectDir.resolve("frontend");
+      Path candidate = projectDir.resolve(STATIC_DIR);
       if (isFrontendDirectory(candidate)) {
         return candidate.toAbsolutePath().normalize();
-      }
-      Path parentCandidate = projectDir.getParent().resolve("frontend");
-      if (isFrontendDirectory(parentCandidate)) {
-        return parentCandidate.toAbsolutePath().normalize();
       }
     }
 
@@ -60,7 +59,7 @@ final class SeleniumTestSupport {
     if (configured != null && !configured.isBlank()) {
       return configured;
     }
-    return "http://localhost:5500/frontend/index.html";
+    return "http://localhost:8080/";
   }
 
   private static Path resolvePath(String value, String propertyName) {

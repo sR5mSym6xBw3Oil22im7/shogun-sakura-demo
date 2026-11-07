@@ -1,219 +1,28 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="桜の押し花と将軍の扇を高級感あるギャラリー風に紹介する販売デモサイトです。">
-  <title>桜と将軍の扇｜高級ギャラリー販売デモ</title>
-  <link rel="stylesheet" href="css/style.css">
+  <!--
+    画面はバックエンド（Spring Boot / Render）から配信する構成へ移行した。
+    この URL にアクセスされた場合は、バックエンドのトップページへ遷移する。
+  -->
+  <meta http-equiv="refresh" content="0; url=https://shogun-sakura-demo.onrender.com/">
+  <title>SHOGUN SAKURA</title>
+  <script>
+    (function () {
+      var isLocal = location.protocol === 'file:' ||
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname === '[::1]' ||
+        location.hostname === '';
+      var backendUrl = isLocal ? 'http://localhost:8080/' : 'https://shogun-sakura-demo.onrender.com/';
+      window.location.replace(backendUrl + window.location.search + window.location.hash);
+    })();
+  </script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">SHOGUN SAKURA</div>
-    <div class="header-right">
-      <nav class="global-nav" aria-label="主要メニュー">
-        <a href="#features">特徴</a>
-        <a href="#purchase">購入デモ</a>
-        <a href="orderhistory.html">注文履歴一覧表示</a>
-      </nav>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div class="copy">
-        <p class="sub">Sakura Pressed Flower &amp; White Folding Fan</p>
-        <h1>飾るための桜。<br>魅せるための扇。</h1>
-        <p>
-          桜の押し花と「将軍」と印字された扇を、和のギフトセットとして紹介するデモサイトです。
-          高級感のある配色で、商品そのものの存在感を引き立てます。
-        </p>
-        <a class="btn" href="#features">商品セットを見る</a>
-      </div>
-      <div class="gallery">
-        <figure class="large">
-          <img src="assets/shogun.png" alt="将軍の扇">
-          <figcaption>将軍の扇</figcaption>
-        </figure>
-        <figure class="small">
-          <img src="assets/oshibana_sakura.png" alt="桜の押し花">
-          <figcaption>桜の押し花</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="demo-note">
-      <strong>実販売なし：</strong>
-      このページは職業訓練校卒業制作ポートフォリオ用のデモです。決済・注文・在庫管理は実装していません。
-    </section>
-
-    <section class="intro" id="features">
-      <p class="sub">About the Set</p>
-      <h2>繊細な桜と、力強い「将軍」の対比。</h2>
-      <div class="intro-grid">
-        <p>
-          押し花の柔らかな色合いと、扇に印字された力強い文字を組み合わせることで、
-          ギフト・展示・撮影小物として提案しやすいセットにしています。
-        </p>
-      </div>
-    </section>
-
-    <section class="product-showcase" id="product">
-      <article>
-        <div class="image-shell">
-          <img src="assets/oshibana_sakura.png" alt="桜の押し花の商品画像">
-        </div>
-        <div class="text-shell">
-          <span>Item 01</span>
-          <h3>桜の押し花</h3>
-          <p>
-            季節感を添える押し花。淡い色合いを活かし、カード制作やディスプレイ演出に向いた商品として掲載しています。
-          </p>
-        </div>
-      </article>
-      <article>
-        <div class="image-shell">
-          <img src="assets/shogun.png" alt="将軍の扇の商品画像">
-        </div>
-        <div class="text-shell">
-          <span>Item 02</span>
-          <h3>将軍の扇</h3>
-          <p>
-            白を基調にした扇面に「将軍」と印字。和の雰囲気とインパクトを兼ね備えたセット商品の主役です。
-          </p>
-        </div>
-      </article>
-    </section>
-
-    <section class="purchase" id="purchase">
-      <div class="purchase-card">
-        <p class="sub">Set Price / Demo</p>
-        <h2>桜の押し花と将軍の扇セット</h2>
-        <div class="price">¥4,800 <span>税込・デモ価格</span></div>
-        <dl>
-          <div>
-            <dt>セット内容</dt>
-            <dd>押し花（桜）1点、将軍の扇1点</dd>
-          </div>
-          <div>
-            <dt>用途</dt>
-            <dd>展示、撮影小物、和風ギフト、ポートフォリオ掲載</dd>
-          </div>
-          <div>
-            <dt>販売状態</dt>
-            <dd>デモサイトのため実際には販売していません</dd>
-          </div>
-        </dl>
-
-        <form class="purchase-form" data-order-form action="orderConfirmation.html" method="get" novalidate>
-          <div class="form-grid">
-            <div class="field">
-              <label for="name">お名前</label>
-              <input id="name" class="prefilled-value" name="name" type="text" maxlength="50" autocomplete="name" value="山田　太郎" data-clear-on-focus="true" required>
-              <p class="field-error" data-error-for="name" aria-live="polite"></p>
-            </div>
-
-            <div class="field">
-              <label for="email">メールアドレス</label>
-              <input id="email" class="prefilled-value" name="email" type="email" maxlength="100" autocomplete="email" value="yamanda@demo" data-email-prefix="yamanda@demo" data-clear-on-focus="true" required>
-              <p class="field-error" data-error-for="email" aria-live="polite"></p>
-            </div>
-
-            <div class="field">
-              <label for="postalCode">郵便番号</label>
-              <input id="postalCode" class="prefilled-value" name="postalCode" type="text" inputmode="numeric" maxlength="8" autocomplete="postal-code" value="100-0001" data-clear-on-focus="true">
-              <p class="field-error" data-error-for="postalCode" aria-live="polite"></p>
-            </div>
-
-            <div class="field field-full">
-              <label for="address">住所</label>
-              <textarea id="address" class="prefilled-value" name="address" rows="3" maxlength="200" autocomplete="street-address" data-clear-on-focus="true" required>東京都港区芝公園4-2-8</textarea>
-              <p class="field-error" data-error-for="address" aria-live="polite"></p>
-            </div>
-
-            <div class="field">
-              <label for="quantity">数量</label>
-              <input id="quantity" name="quantity" type="number" min="1" max="9" step="1" value="1" inputmode="none" data-quantity-input aria-describedby="quantity-warning" required>
-              <p id="quantity-warning" class="field-note field-note--warning" data-quantity-warning aria-live="polite"></p>
-              <p class="field-error" data-error-for="quantity" aria-live="polite"></p>
-            </div>
-
-            <div class="field field-full">
-              <label for="note">備考</label>
-              <textarea id="note" class="prefilled-value" name="note" rows="3" maxlength="200" data-clear-on-focus="true">ご要望があればご記入ください</textarea>
-              <p class="field-error" data-error-for="note" aria-live="polite"></p>
-            </div>
-          </div>
-
-          <p class="form-hint">
-            このフォームはデモ用です。送信すると注文確認画面へ移動し、入力した個人情報は引き継がれません。
-          </p>
-
-          <button class="btn" type="submit" data-submit-button>注文確認</button>
-          <div class="form-status" data-form-status aria-live="polite"></div>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <section class="chatbot" data-chatbot>
-    <button
-      class="chatbot-toggle"
-      type="button"
-      data-chatbot-toggle
-      aria-label="AI案内を開く"
-      aria-expanded="false"
-      aria-describedby="chatbot-tooltip"
-      aria-controls="chatbot-panel">
-      <img src="assets/chatbot-icon.png" alt="" aria-hidden="true">
-    </button>
-    <p class="chatbot-tooltip" id="chatbot-tooltip" role="tooltip">
-      SHOGUN SAKURAのページ内容について質問できます。
-    </p>
-    <div class="chatbot-panel" id="chatbot-panel" data-chatbot-panel hidden>
-      <div class="chatbot-header">
-        <div>
-          <p class="chatbot-kicker">SHOGUN SAKURA</p>
-          <h2>AI案内</h2>
-        </div>
-        <button class="chatbot-close" type="button" data-chatbot-close aria-label="AI案内を閉じる">×</button>
-      </div>
-      <div class="chatbot-messages" data-chatbot-messages aria-live="polite" aria-label="AI案内の会話履歴">
-        <p class="chatbot-message chatbot-message--assistant">SHOGUN SAKURAのページ内容について質問できます。</p>
-      </div>
-      <form class="chatbot-form" data-chatbot-form>
-        <label class="chatbot-label" for="chatbot-message">質問</label>
-        <textarea
-          id="chatbot-message"
-          data-chatbot-input
-          maxlength="500"
-          rows="3"
-          placeholder="セット内容や価格について質問"
-          aria-describedby="chatbot-count"></textarea>
-        <div class="chatbot-actions">
-          <span id="chatbot-count" data-chatbot-count>0 / 500</span>
-          <button class="chatbot-send" type="submit" data-chatbot-send>送信</button>
-        </div>
-        <p class="chatbot-status" data-chatbot-status aria-live="polite" hidden></p>
-      </form>
-    </div>
-  </section>
-
-  <footer>SHOGUN SAKURA</footer>
-
-  <script>
-    window.API_BASE_URL = (
-      location.protocol === 'file:' ||
-      location.hostname === 'localhost' ||
-      location.hostname === '127.0.0.1' ||
-      location.hostname === '[::1]' ||
-      location.hostname === ''
-    )
-      ? 'http://localhost:8080'
-      : 'https://shogun-sakura-demo.onrender.com';
-  </script>
-  <script src="js/main.js"></script>
-  <script src="js/chat.js"></script>
+  <p><a href="https://shogun-sakura-demo.onrender.com/">SHOGUN SAKURA へ移動します</a></p>
 </body>
 </html>

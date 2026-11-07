@@ -1,6 +1,6 @@
 # Render Deployment
 
-This backend is intended to be deployed as a Render Web Service using Docker. The repository already includes a Docker build definition in [backend/Dockerfile](Dockerfile) and a service definition in [render.yaml](../render.yaml).
+This backend is intended to be deployed as a Render Web Service using Docker. It serves both the REST API and the site pages (HTML/CSS/JS/images under `src/main/resources/static`), so the site is available at `https://shogun-sakura-demo.onrender.com/`. The repository already includes a Docker build definition in [backend/Dockerfile](Dockerfile) and a service definition in [render.yaml](../render.yaml).
 
 ## Recommended Render Web Service settings
 
@@ -35,7 +35,7 @@ Set these values in the Render dashboard instead of committing them to the repos
 
 - `GEMINI_API_KEY` is required for the AI chat feature.
 - `MCP_INTERNAL_TOKEN` and `MCP_BASE_URL` are required for the internal MCP integration used by the chat workflow.
-- `ALLOWED_ORIGINS` should be `https://sr5msym6xbw3oil22im7.github.io` in production.
+- `ALLOWED_ORIGINS` should be `https://shogun-sakura-demo.onrender.com` in production. The pages call the API on the same origin, so the GitHub Pages origin is no longer required. Update this value in the Render dashboard as well if it was set manually.
 
 ## Build notes
 
@@ -45,7 +45,8 @@ Set these values in the Render dashboard instead of committing them to the repos
 
 ## Deployment notes
 
-- The frontend sends order requests to this backend API.
+- The site pages are served by this backend and send order and chat requests to the same origin.
+- The old GitHub Pages URL (`/shogun-sakura-demo/frontend/`) only redirects to this service.
 - Order data is stored temporarily in the Render Web Service's H2 in-memory database.
 - When an order is accepted, the API returns an order completion message and order ID to the frontend.
 - Keep secrets in the Render service settings; do not store them in the repository.
